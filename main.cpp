@@ -1,217 +1,284 @@
-// ============================================================
-// Traffic Flow Optimization System
-// Data Structures Used:
-//   - Graph (Adjacency List)  -> Road Network
-//   - Queue                   -> Vehicle queues at intersections
-//   - Map / Vector            -> Road and vehicle storage
-//   - Set                     -> Dijkstra's unvisited nodes
-//
-// Algorithms:
-//   - Dijkstra's Shortest Path (Section 4.7)
-//   - BPR Congestion Model (Section 4.4)
-//   - Adaptive Signal Control (Section 4.8)
+﻿
 
-#include <iostream>
-#include <string>
-#include "Graph.h"
-#include "Node.h"
-#include "Road.h"
-#include "Vehicle.h"
-#include "TrafficSignal.h"
-#include "TrafficFormula.h"
+#include <SFML/Graphics.hpp>
+#include <cmath>
+#include <map>
 #include "Simulator.h"
-#include "FileManager.h"
-#include "Utility.h"
 
 using namespace std;
 
-// Display the main menu
-void printMenu() {
-    cout << endl;
-    Utility::printDivider('=');
-    cout << "  TRAFFIC FLOW OPTIMIZATION SYSTEM" << endl;
-    Utility::printDivider('=');
-    cout << "  1. Run Full Simulation (50 steps)" << endl;
-    cout << "  2. Run Quick Simulation (20 steps)" << endl;
-    cout << "  3. View Road Network Structure" << endl;
-    cout << "  4. View Shortest Path (Dijkstra Demo)" << endl;
-    cout << "  5. Compare Static vs Adaptive Signals" << endl;
-    cout << "  6. Exit" << endl;
-    Utility::printDivider('=');
-    cout << "  Enter choice: ";
+// Window
+const int WIDTH = 1000;
+const int HEIGHT = 700;
+
+// Simulation
+float stepInterval = 0.6f;
+const int TOTAL_STEPS = 100;
+
+// Node layout positions on screen
+map<int, sf::Vector2f> nodePos = {
+    {0, {150.f, 350.f}},
+    {1, {400.f, 120.f}},
+    {2, {650.f, 350.f}},
+    {3, {400.f, 580.f}},
+    {4, {850.f, 350.f}}
+};
+
+// Road color based on congestion (green->red)
+sf::Color getRoadColor(float c)
+{
+    if (c > 1.f) c = 1.f;
+    return sf::Color(
+        (uint8_t)(255 * c),
+        (uint8_t)(255 * (1 - c)),
+        60
+    );
 }
 
-void dijkstraDemo(Graph& g) {
-    Utility::printHeader("DIJKSTRA SHORTEST PATH DEMO");
+// Draw a line between two points
+void drawRoad(sf::RenderWindow& win, sf::Vector2f a, sf::Vector2f b, sf::Color col)
+{
+    sf::VertexArray line(sf::PrimitiveType::Lines, 2);
+    line[0].position = a;
+    line[0].color = col;
+    line[1].position = b;
+    line[1].color = col;
+    win.draw(line);
+}
 
-    // Display all nodes
-    cout << "Available Nodes: ";
-    for (auto& kv : g.nodes) cout << kv.first << " ";
-    cout << endl;
+int main()
+{
+    Simulator sim;
+    sim.buildCityGraph();
+    sim.setupSignals();
+    sim.scheduleEvents();
 
-    int src = 0, dst = 4;
-    cout << "Enter source node (0-4): ";
-    cin >> src;
+    sf::RenderWindow window(
+        sf::VideoMode({ WIDTH, HEIGHT }),
+        "Traffic Simulation"
+    );
+    window.setFramerateLimit(60);
 
-    // Validate input
-    if (g.nodes.find(src) == g.nodes.end()) {
-        cout << "Invalid node. Using default: 0" << endl;
-        src = 0;
-    }
+    sf::Clock clock;
+    float accumulator = 0.f;
+    bool paused = false;
 
-    cout << "Enter destination node (0-4): ";
-    cin >> dst;
+    // Smooth positions for each vehicle (id -> screen pos)
+    map<int, sf::Vector2f> vehiclePos;
 
-    if (g.nodes.find(dst) == g.nodes.end()) {
-        cout << "Invalid node. Using default: 4" << endl;
-        dst = 4;
-    }
+    // -------------------------------------------------------
+    // STEP FUNCTION - runs one simulation step
+    // -------------------------------------------------------
+    auto step = [&]()
+        {
+            if (sim.currentStep >= TOTAL_STEPS) return;
 
-    // Run Dijkstra
-    vector<int> path = g.shortestPathDijkstra(src, dst);
+            sim.currentStep++;
 
-    cout << "\nShortest path from " << src << " to " << dst << ": ";
-    if (path.empty()) {
-        cout << "No path found." << endl;
-    }
-    else {
-        for (int i = 0; i < (int)path.size(); i++) {
-            cout << path[i];
-            if (i < (int)path.size() - 1) cout << " -> ";
-        }
-        cout << endl;
+            sim.processEvents();
+            sim.generateVehicles();
 
-        // Show road details along path
-        cout << "\nRoad details along path:" << endl;
-        for (int i = 0; i < (int)path.size() - 1; i++) {
-            int rid = g.findRoadIndex(path[i], path[i + 1]);
-            if (rid >= 0) {
-                Road& r = g.roads[rid];
-                cout << "  " << path[i] << "->" << path[i + 1]
-                    << " | Length: " << r.length << "km"
-                    << " | Speed: " << r.maxSpeed << "km/h"
-                    << " | TravelTime: " << Utility::formatDouble(r.travelTime) << " steps" << endl;
+            auto dep = sim.moveVehicles();
+            sim.updateRoadStates(dep);
+            sim.updateSignals();
+            sim.releaseFromQueues();
+            sim.rerouteWaitingVehicles();
+            sim.dispatchWaitingVehicles();
+
+            // Initialize position for newly spawned vehicles
+            for (auto& v : sim.vehicles)
+            {
+                if (!vehiclePos.count(v.id))
+                    vehiclePos[v.id] = nodePos[v.source];
+            }
+        };
+
+    // -------------------------------------------------------
+    // MAIN LOOP
+    // -------------------------------------------------------
+    while (window.isOpen())
+    {
+        float dt = clock.restart().asSeconds();
+
+        // --- EVENTS ---
+        while (auto event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>())
+                window.close();
+
+            if (auto* key = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (key->scancode == sf::Keyboard::Scancode::Escape)
+                    window.close();
+
+                if (key->scancode == sf::Keyboard::Scancode::Space)
+                    paused = !paused;
+
+                if (key->scancode == sf::Keyboard::Scancode::Right)
+                    step(); // manual step with arrow key
             }
         }
-    }
-}
 
-
-void compareSignals() {
-    Utility::printHeader("STATIC vs ADAPTIVE SIGNAL COMPARISON");
-
-    cout << "\n--- Running with STATIC (fixed timer) signals ---" << endl;
-    {
-        Simulator sim1;
-        Utility::initRandom();
-        sim1.buildCityGraph();
-
-        // Set up static signals
-        for (auto& kv : sim1.graph.nodes) {
-            int nid = kv.first;
-            vector<int>& inRoads = kv.second.incomingRoads;
-            if (!inRoads.empty()) {
-                sim1.signals[nid] = TrafficSignal(nid, inRoads, false); // static mode
+        // --- AUTO STEP ---
+        if (!paused)
+        {
+            accumulator += dt;
+            if (accumulator >= stepInterval)
+            {
+                accumulator = 0.f;
+                step();
             }
         }
 
-        // Run for 20 steps only
-        FileManager::clearLogFile("traffic_log.txt");
-        FileManager::clearLogFile("roads.txt");
-        sim1.run(20);
+        // -------------------------------------------------------
+        // UPDATE VEHICLE POSITIONS (smooth lerp toward target)
+        // -------------------------------------------------------
+        for (auto& v : sim.vehicles)
+        {
+            sf::Vector2f target;
 
-        cout << "\n[STATIC] Completed: " << sim1.totalCompleted
-            << " | Generated: " << sim1.totalGenerated << endl;
-        double avgTT1 = TrafficFormula::averageTravelTime(sim1.completedTravelTimes);
-        cout << "[STATIC] Average Travel Time: " << Utility::formatDouble(avgTT1) << " steps" << endl;
-    }
+            if (v.status == WAITING || v.status == ARRIVED)
+            {
+                // Vehicle is at a node — snap to node position
+                target = nodePos[v.currentNode];
+            }
+            else // MOVING
+            {
+                auto& r = sim.graph.roads[v.currentRoad];
 
-    cout << "\n--- Running with ADAPTIVE (queue-based) signals ---" << endl;
-    {
-        Simulator sim2;
-        Utility::initRandom();
-        sim2.buildCityGraph();
-        sim2.setupSignals(); // adaptive by default
+                sf::Vector2f a = nodePos[r.source];
+                sf::Vector2f b = nodePos[r.destination];
 
-        FileManager::clearLogFile("traffic_log.txt");
-        FileManager::clearLogFile("roads.txt");
-        sim2.run(20);
+                // FIX: use entryTravelTime (fixed at road entry)
+                // NOT r.travelTime (which changes every step due to congestion update)
+                // Old bug: progress = 1 - remaining/r.travelTime → jumps when r.travelTime changes
+                // Fix:     progress = 1 - remaining/entryTravelTime → always correct 0->1 range
+                float progress = 0.f;
+                if (v.entryTravelTime > 0.0)
+                    progress = 1.f - (float)(v.remainingTravelTime / v.entryTravelTime);
 
-        cout << "\n[ADAPTIVE] Completed: " << sim2.totalCompleted
-            << " | Generated: " << sim2.totalGenerated << endl;
-        double avgTT2 = TrafficFormula::averageTravelTime(sim2.completedTravelTimes);
-        cout << "[ADAPTIVE] Average Travel Time: " << Utility::formatDouble(avgTT2) << " steps" << endl;
-    }
+                if (progress < 0.f) progress = 0.f;
+                if (progress > 1.f) progress = 1.f;
 
-    cout << "\n[INFO] Adaptive signals prioritize roads with longest queues." << endl;
-    cout << "[INFO] This reduces waiting time and improves overall throughput." << endl;
-}
+                target = a + (b - a) * progress;
+            }
 
-
-int main() {
-    Utility::initRandom(); // Seed random number generator
-
-    int choice = 0;
-    bool running = true;
-
-    Simulator mainSim;
-    mainSim.buildCityGraph();
-    mainSim.setupSignals();
-    mainSim.scheduleEvents();
-
-    while (running) {
-        printMenu();
-
-        // Input validation loop
-        while (!(cin >> choice)) {
-            cin.clear();
-            cin.ignore(1000, '\n');
-            cout << "  Invalid input. Enter a number (1-6): ";
+            // Smooth lerp toward target
+            vehiclePos[v.id] += (target - vehiclePos[v.id]) * min(dt * 5.f, 1.f);
         }
 
-        switch (choice) {
-        case 1: {
-            Simulator sim;
-            Utility::initRandom();
-            sim.buildCityGraph();
-            sim.setupSignals();
-            sim.scheduleEvents();
-            sim.run(50);
-            break;
+        // -------------------------------------------------------
+        // DRAW
+        // -------------------------------------------------------
+        window.clear(sf::Color(20, 20, 30));
+
+        // --- ROADS ---
+        for (auto& r : sim.graph.roads)
+        {
+            float cong = (r.capacity > 0)
+                ? (float)r.currentFlow / r.capacity
+                : 0.f;
+
+            sf::Color col = getRoadColor(cong);
+
+            // Override color based on signal state
+            if (sim.signals.count(r.destination))
+            {
+                auto& sig = sim.signals[r.destination];
+                if (sig.getSignal(r.id) == 1)
+                    col = sf::Color::Green;        // green signal
+                else
+                    col = sf::Color(150, 0, 0);    // red signal
+            }
+
+            drawRoad(window, nodePos[r.source], nodePos[r.destination], col);
         }
-        case 2: {
-            Simulator sim;
-            Utility::initRandom();
-            sim.buildCityGraph();
-            sim.setupSignals();
-            sim.run(20);
-            break;
+
+        // --- NODES (intersections) ---
+        for (auto& n : sim.graph.nodes)
+        {
+            sf::CircleShape c(18.f);
+            c.setOrigin(sf::Vector2f(18.f, 18.f));
+            c.setPosition(nodePos[n.first]);
+            c.setFillColor(sf::Color(80, 100, 180));
+            window.draw(c);
         }
-        case 3: {
-            // Show network
-            mainSim.graph.displayGraph();
-            cout << "\nCurrent Traffic State:" << endl;
-            mainSim.graph.displayTrafficState();
-            break;
+
+        // --- TRAFFIC SIGNALS ---
+        for (auto& kv : sim.signals)
+        {
+            int nodeId = kv.first;
+            auto& signal = kv.second;
+
+            sf::Vector2f base = nodePos[nodeId];
+
+            // Draw pole
+            sf::RectangleShape pole(sf::Vector2f(5.f, 30.f));
+            pole.setOrigin(sf::Vector2f(2.5f, 15.f));
+            pole.setPosition(sf::Vector2f(base.x + 25.f, base.y));
+            pole.setFillColor(sf::Color(100, 100, 100));
+            window.draw(pole);
+
+            int greenRoad = signal.currentGreenRoad;
+
+            // Draw 3 lights: top=red, mid=yellow, bot=green
+            for (int i = 0; i < 3; i++)
+            {
+                sf::CircleShape light(4.f);
+                light.setOrigin(sf::Vector2f(4.f, 4.f));
+                light.setPosition(sf::Vector2f(base.x + 25.f, base.y - 10.f + i * 10.f));
+
+                sf::Color col(50, 50, 50); // off by default
+
+                if (i == 0)
+                    col = sf::Color::Red;                              // top = always red
+
+                if (i == 1 && signal.greenTimer >= 4)
+                    col = sf::Color::Yellow;                           // mid = yellow near switch
+
+                if (i == 2 && greenRoad != -1)
+                    col = sf::Color::Green;                            // bot = green when active
+
+                light.setFillColor(col);
+                window.draw(light);
+            }
         }
-        case 4: {
-            dijkstraDemo(mainSim.graph);
-            break;
+
+        // --- VEHICLES (CARS) ---
+        for (auto& v : sim.vehicles)
+        {
+            if (v.status == ARRIVED) continue;
+
+            sf::Vector2f pos = vehiclePos[v.id];
+
+            // Calculate rotation angle along road direction
+            float angle = 0.f;
+            if (v.status == MOVING && v.currentRoad >= 0)
+            {
+                auto& r = sim.graph.roads[v.currentRoad];
+                sf::Vector2f d = nodePos[r.destination] - nodePos[r.source];
+                angle = std::atan2(d.y, d.x) * 180.f / 3.14159265f;
+            }
+
+            // Car body
+            sf::RectangleShape body(sf::Vector2f(16.f, 8.f));
+            body.setOrigin(sf::Vector2f(8.f, 4.f));
+            body.setPosition(pos);
+            body.setRotation(sf::degrees(angle));
+            body.setFillColor(sf::Color::Cyan);
+
+            // Car roof
+            sf::RectangleShape top(sf::Vector2f(10.f, 6.f));
+            top.setOrigin(sf::Vector2f(5.f, 3.f));
+            top.setPosition(pos);
+            top.setRotation(sf::degrees(angle));
+            top.setFillColor(sf::Color(0, 150, 200));
+
+            window.draw(body);
+            window.draw(top);
         }
-        case 5: {
-            compareSignals();
-            break;
-        }
-        case 6: {
-            cout << "\nExiting simulation. Output files saved." << endl;
-            running = false;
-            break;
-        }
-        default: {
-            cout << "  Invalid choice. Please enter 1-6." << endl;
-            break;
-        }
-        }
+
+        window.display();
     }
 
     return 0;

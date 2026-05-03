@@ -73,7 +73,7 @@ public:
 		if (travelTimes.empty()) return 0.0;
 		double sum = 0.0;
 		for (int t : travelTimes) sum += t;
-		return sum / travelTimes.size();
+		return sum / (double)travelTimes.size();
 	}
 
 	// Section 4.10: Total Delay metric

@@ -54,7 +54,7 @@ public:
 	}
 
 	static void printCongestionBar(double rho) {
-		int filled = rho * 10;   // convert 0.0–1.0 → 0–10
+		int filled = (int)(rho * 10);   // convert 0.0–1.0 → 0–10
 
 		if (filled > 10) filled = 10;
 		if (filled < 0) filled = 0;

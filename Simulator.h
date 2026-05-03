@@ -22,10 +22,10 @@ const int ROAD_CLEAR = 2;
 const int PEAK_TRAFFIC = 3;
 
 struct SimEvent {
-    int step;
-    int type;        // NO_EVENT / ROAD_BLOCK / ROAD_CLEAR / PEAK_TRAFFIC
-    int roadId;
-    string description;
+    int step = 0;
+    int type = 0;
+    int roadId = -1;
+    string description = "";
 };
 
 class Simulator {
@@ -143,8 +143,8 @@ public:
         else { spawnCount = 1;    threshold = 40; }
 
         for (int i = 0; i < spawnCount; i++) {
-            if (Utility::randomInt(1, 100) > threshold) continue;
-            if (totalGenerated >= 20) break;
+            if (Utility::randomInt(1, 200) > threshold) continue;
+            if (totalGenerated >= 150) break;
 
             int src = sources[Utility::randomInt(0, (int)sources.size() - 1)];
             int dst = dests[Utility::randomInt(0, (int)dests.size() - 1)];
@@ -313,7 +313,6 @@ public:
             if (v.currentNode == v.destination) continue;
             if (!v.hasPath()) continue;
 
-            // Vehicles entering the network at spawn source bypass the signal check
             bool atSpawnSource = (v.currentNode == v.source && v.pathIndex == 0);
             if (!atSpawnSource) continue;
 
@@ -322,6 +321,11 @@ public:
 
             int roadId = graph.findRoadIndex(v.currentNode, nextNode);
             if (roadId < 0) continue;
+
+            if (signals.count(v.currentNode)) {
+                int sig = signals[v.currentNode].getSignal(roadId);
+                if (sig == 0) continue; 
+            }
 
             Road& r = graph.roads[roadId];
             if (r.currentFlow >= r.capacity) continue;

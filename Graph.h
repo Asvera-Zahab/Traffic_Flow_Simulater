@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
+#include <queue>
 #include <vector>
 #include <map>
-#include <set>
 #include "Node.h"
 #include "Road.h"
 #include "TrafficFormula.h"
@@ -108,66 +108,55 @@ public:
     // Returns path as sequence of node IDs
     // Returns empty vector if no path found
     vector<int> shortestPathDijkstra(int startNode, int endNode) const {
-        // Distance map: nodeId -> best known cost
+        // pair<cost, nodeId>
+        priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
+
         map<int, double> dist;
-        map<int, int> prev; // For path reconstruction
+        map<int, int> prev;
 
         // Initialize all distances to infinity
         for (auto& kv : nodes) {
             dist[kv.first] = INF;
             prev[kv.first] = -1;
         }
+
         dist[startNode] = 0.0;
+        pq.push({ 0.0, startNode });
 
-        // Set of unvisited nodes
-        set<int> unvisited;
-        for (auto& kv : nodes)
-            unvisited.insert(kv.first);
+        while (!pq.empty()) {
+            auto [cost, u] = pq.top();
+            pq.pop();
 
-        while (!unvisited.empty()) {
-            // Find unvisited node with minimum distance
-            int u = -1;
-            double minDist = INF;
-            for (int n : unvisited) {
-                if (dist[n] < minDist) {
-                    minDist = dist[n];
-                    u = n;
-                }
-            }
+            // Skip if we already found a better path
+            if (cost > dist[u]) continue;
+            if (u == endNode) break;
 
-            if (u == -1 || dist[u] == INF) break; // No reachable nodes left
-            if (u == endNode) break;               // Reached destination
-
-            unvisited.erase(u);
-
-            //Neighbours
             auto it = adjList.find(u);
             if (it == adjList.end()) continue;
 
             for (int rid : it->second) {
                 const Road& r = roads[rid];
                 int v = r.destination;
-                if (unvisited.find(v) == unvisited.end()) continue;
+                double newDist = dist[u] + r.travelTime;
 
-                // Edge cost = current travel time (Section 4.7)
-                double cost = r.travelTime;
-                if (dist[u] + cost < dist[v]) {
-                    dist[v] = dist[u] + cost;
+                if (newDist < dist[v]) {
+                    dist[v] = newDist;
                     prev[v] = u;
+                    pq.push({ newDist, v });
                 }
             }
         }
 
-        // Reconstruct path by walking backwards from endNode
+        // Reconstruct path
         vector<int> path;
-        if (dist[endNode] == INF) return path; // No path found
+        if (dist[endNode] == INF) return path;
 
         int cur = endNode;
         while (cur != -1) {
             path.push_back(cur);
             cur = prev[cur];
         }
-        // Reverse to get path from start to end
+
         for (int i = 0, j = (int)path.size() - 1; i < j; i++, j--)
             swap(path[i], path[j]);
 
