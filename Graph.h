@@ -10,7 +10,6 @@
 using namespace std;
 // Graph.h - Road network as a directed graph G = (V, E)
 // Section 4.1: Road Network Model
-// Uses adjacency list representation
 // Dijkstra's shortest path (Section 4.7)
 
 const double INF = 1e18; // Infinity for Dijkstra
