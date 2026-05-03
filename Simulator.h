@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <iostream>
 #include <vector>
 #include <map>
@@ -12,10 +12,7 @@
 
 using namespace std;
 
-// Simulator.h - Main simulation engine
-// Section 3: Discrete-time simulation loop
 
-// Event type constants (int-based, replacing enum)
 const int NO_EVENT = 0;
 const int ROAD_BLOCK = 1;
 const int ROAD_CLEAR = 2;
@@ -68,20 +65,20 @@ public:
     void buildCityGraph() {
         Utility::printHeader("BUILDING CITY ROAD NETWORK");
 
-        graph.addVertex(0, "Central Hub");
-        graph.addVertex(1, "North Junction");
-        graph.addVertex(2, "East Square");
-        graph.addVertex(3, "South Gate");
-        graph.addVertex(4, "West Terminal");
+        graph.addVertex(0, "Karachi");
+        graph.addVertex(1, "Islamabad");
+        graph.addVertex(2, "Lahore");
+        graph.addVertex(3, "Murree");
+        graph.addVertex(4, "Kashmir");
 
         // addEdge(src, dst, length_km, maxSpeed_kmh, capacity, dischargeRate)
         graph.addEdge(0, 1, 2.0, 80.0, 12, 4.0);  // Main highway
-        graph.addEdge(0, 2, 1.5, 50.0, 8, 3.0);  // Urban road
-        graph.addEdge(1, 2, 1.0, 60.0, 6, 2.0);  // Connector road
+        graph.addEdge(0, 2, 1.5, 50.0, 8, 3.0);   // Urban road
+        graph.addEdge(1, 2, 1.0, 60.0, 6, 2.0);   // Connector road
         graph.addEdge(1, 3, 3.0, 90.0, 14, 5.0);  // Expressway
-        graph.addEdge(2, 3, 1.2, 40.0, 5, 2.0);  // Narrow road (congestion hotspot)
+        graph.addEdge(2, 3, 1.2, 40.0, 5, 2.0);   // Narrow road (congestion hotspot)
         graph.addEdge(3, 4, 2.5, 70.0, 10, 3.0);  // Final stretch
-        graph.addEdge(2, 4, 2.0, 55.0, 7, 3.0);  // Bypass road
+        graph.addEdge(2, 4, 2.0, 55.0, 7, 3.0);   // Bypass road
 
         cout << "City graph created with 5 nodes and 7 roads." << endl;
         graph.displayGraph();
@@ -138,13 +135,13 @@ public:
         vector<int> sources = { 0, 1, 2 };
         vector<int> dests = { 2, 3, 4 };
 
-        int spawnCount;int threshold;
-        if (peakMode) { spawnCount = 3;    threshold = 80; }
-        else { spawnCount = 1;    threshold = 40; }
+        int spawnCount, threshold;
+        if (peakMode) { spawnCount = 3; threshold = 80; }
+        else { spawnCount = 1; threshold = 40; }
 
         for (int i = 0; i < spawnCount; i++) {
-            if (Utility::randomInt(1, 200) > threshold) continue;
-            if (totalGenerated >= 150) break;
+            if (Utility::randomInt(1, 100) > threshold) continue;
+            if (totalGenerated >= 20) break;
 
             int src = sources[Utility::randomInt(0, (int)sources.size() - 1)];
             int dst = dests[Utility::randomInt(0, (int)dests.size() - 1)];
@@ -180,10 +177,6 @@ public:
                     int destNode = graph.roads[rid].destination;
                     v.arriveAtNode(destNode);
 
-                    if (destNode != v.destination) {
-                        graph.roads[rid].queueCount++;
-                    }
-
                     if (destNode == v.destination) {
                         v.markArrived(currentStep);
                         totalCompleted++;
@@ -216,6 +209,8 @@ public:
     }
 
     // Section 4.2: dij(t) = gij(t) * min(Qij, muij, cjk - fjk)
+    // Releases vehicles that are queued at a node's incoming road and
+    // moves them onto the next road in their path if the signal is green.
     void releaseFromQueues() {
         for (Road& r : graph.roads) {
             if (r.queueCount <= 0) continue;
@@ -313,19 +308,11 @@ public:
             if (v.currentNode == v.destination) continue;
             if (!v.hasPath()) continue;
 
-            bool atSpawnSource = (v.currentNode == v.source && v.pathIndex == 0);
-            if (!atSpawnSource) continue;
-
             int nextNode = v.getNextNode();
             if (nextNode < 0) continue;
 
             int roadId = graph.findRoadIndex(v.currentNode, nextNode);
             if (roadId < 0) continue;
-
-            if (signals.count(v.currentNode)) {
-                int sig = signals[v.currentNode].getSignal(roadId);
-                if (sig == 0) continue; 
-            }
 
             Road& r = graph.roads[roadId];
             if (r.currentFlow >= r.capacity) continue;
@@ -370,7 +357,13 @@ public:
 
         double avgTT = TrafficFormula::averageTravelTime(completedTravelTimes);
         double delay = TrafficFormula::totalDelay(completedTravelTimes, completedFreeTimes);
-        double throughput = totalSteps > 0 ? (double)totalCompleted / totalSteps : 0.0;
+        double throughput;
+        if (totalSteps > 0) {
+            throughput = (double)totalCompleted / totalSteps;
+        }
+        else {
+            throughput = 0.0;
+        }
         double avgCong = TrafficFormula::averageCongestion(stepAvgCongestion);
 
         int mostCongestedRoad = mostCongestedRoadTracked;
@@ -394,8 +387,7 @@ public:
         FileManager::saveRoadData(graph.roads);
         FileManager::saveVehiclesTxt(vehicles);
         FileManager::exportReport(totalSteps, totalCompleted, stillWaiting,
-            avgTT, delay, throughput, avgCong,
-            mostCongestedRoad, mostBusyNode);
+            avgTT, delay, throughput, avgCong, mostCongestedRoad, mostBusyNode);
 
         cout << "\nFinal Signal States:" << endl;
         for (auto& kv : signals) kv.second.display();

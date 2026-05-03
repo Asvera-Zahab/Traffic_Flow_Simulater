@@ -108,7 +108,7 @@ public:
 
     // Display vehicle info
     void display() const {
-        cout << "  Vehicle " << id << " | " << source << "->" << destination
+        cout << "[BY VEHICLE]  Vehicle " << id << " | " << source << "->" << destination
             << " | At node: " << currentNode
             << " | Status: " << getStatusString()
             << " | RemainingTime: " << remainingTravelTime << endl;

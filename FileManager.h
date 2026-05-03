@@ -134,7 +134,6 @@ public:
             file.read((char*)&rec, sizeof(VehicleRecord));
             Vehicle v(rec.id, rec.source, rec.destination, rec.stepEntered);
             v.currentNode = rec.currentNode;
-            //v.status = (VehicleStatus)rec.status;
             v.status = rec.status;
             v.stepArrived = rec.stepArrived;
             v.remainingTravelTime = rec.remainingTravelTime;
@@ -171,7 +170,7 @@ public:
             cout << "[FileManager] ERROR: Cannot open " << filename << endl;
             return;
         }
-
+        file << "[FILE MANAGER]" << endl;
         file << "------------------------------------" << endl;
         file << "  TRAFFIC SIMULATION REPORT  " << endl;
         file << "------------------------------------" << endl;
@@ -195,7 +194,7 @@ public:
         string filename = "traffic_log.txt") {
         ofstream file(filename, ios::out | ios::app);
         if (!file.is_open()) return;
-        file << "STEP " << step << endl;
+        file << "STEP [BY FILE MANAGER]" << step << endl;
         file << "  Vehicles Moving   : " << moving << endl;
         file << "  Vehicles Waiting  : " << waiting << endl;
         file << "  Completed         : " << completed << endl;
@@ -208,7 +207,7 @@ public:
     static void saveRoadsTxt(int step, vector<Road>& roads, string filename = "roads.txt") {
         ofstream file(filename, ios::out | ios::app);
         if (!file.is_open()) return;
-        file << "STEP " << step << endl;
+        file << "STEP [BY FILE MANAGER]" << step << endl;
         for (Road& r : roads) {
             file << "Road " << r.source << "->" << r.destination
                 << " Flow: " << r.currentFlow
@@ -223,7 +222,7 @@ public:
     static void saveVehiclesTxt(vector<Vehicle>& vehicles, string filename = "vehicles.txt") {
         ofstream file(filename, ios::out);
         if (!file.is_open()) return;
-        file << "---VEHICLE COMPLETION FILE ---" << endl;
+        file << "---VEHICLE COMPLETION FILE [BY FILE MANAGER] ---" << endl;
         for (Vehicle& v : vehicles) {
             file << "Vehicle " << v.id<< " | " << v.source << "->" << v.destination
                 << " | Status: " << v.getStatusString();

@@ -4,32 +4,31 @@
 #include <cmath>   //for pow
 using namespace std;
 
-// BFT (Bureau of Public Roads) model constants
 const double ALPHA = 0.15;   // Congestion sensitivity
 const double BETA = 4.0;    // Nonlinearity factor
 
 class Road {
 public:
     int id;            // Unique road ID
-    int source;        // Source intersection (node)
-    int destination;   // Destination intersection (node)
+    int source;        // Source intersection
+    int destination;   // Destination intersection
 
-    //Physical properties
-    double length;     // lij: length of road in km
-    double maxSpeed;   // vij_max: max speed in km/h
+    double length;     // lij: length of road
+    double maxSpeed;   // vij_max: max speed
     int capacity;      // cij: max vehicles on road at once
     double dischargeRate; // muij: max vehicles that can leave per step
 
-    //Dynamic state (updated each)
+    //Dynamic state (updated each step)
     int currentFlow;   // fij(t): vehicles currently on road
     int queueCount;    // Qij(t): vehicles waiting at destination intersection
-    double congestion; // rho = fij / cij (0 to 1+)
-    double travelTime; // wij(t): current travel time (in steps)
+    double congestion; // rho = fij / cij 
+    double travelTime; // wij(t): current travel time
     double freeTravelTimeInSteps; // wij_free = length / maxSpeed 
 
     Road() {
         id = -1; source = -1; destination = -1; length = 1.0; maxSpeed = 60.0; capacity = 10;
-        dischargeRate = 3.0; currentFlow = 0; queueCount = 0; congestion = 0.0; travelTime = 0.0; freeTravelTimeInSteps = 0.0;
+        dischargeRate = 3.0; currentFlow = 0; queueCount = 0; congestion = 0.0; travelTime = 0.0; 
+        freeTravelTimeInSteps = 0.0;
     }
 
     Road(int roadId, int src, int dst, double len, double speed, int cap, double discharge = 3.0) {
@@ -38,7 +37,7 @@ public:
 
         // Section 4.4: Free flow travel time wij_free = lij / vij_max
         freeTravelTimeInSteps = length / maxSpeed * 60.0; // convert to minutes(steps)
-        if (freeTravelTimeInSteps < 1.0) freeTravelTimeInSteps = 1.0; // minimum 1 step = 1 one unit of time
+        if (freeTravelTimeInSteps < 1.0) freeTravelTimeInSteps = 1.0; //1 step 
         travelTime = freeTravelTimeInSteps;
     }
 
@@ -50,11 +49,11 @@ public:
         else congestion = 0.0;
     }
 
-    // Section 4.4: Congested Travel Time (BPR Formula)
+    // Section 4.4: Congested Travel Time
     // wij(t) = wij_free * (1 + alpha * (fij/cij)^beta)
     void updateTravelTime() {
         updateCongestion();
-        double ratio = congestion;  // reuse it
+        double ratio = congestion;  
         travelTime = freeTravelTimeInSteps * (1.0 + ALPHA * pow(ratio, BETA));
         if (travelTime < 1.0) travelTime = 1.0;
     }
@@ -68,20 +67,9 @@ public:
         if (currentFlow < 0) currentFlow = 0;
     }
 
-    // Section 4.2: Queue Release Formula
-    // dij(t) = gij(t) * min(Qij(t), muij, nextCapacity)
-    // signalGreen: 1 if green, 0 if red
-    // nextAvailableCapacity: cjk - fjk(t)
-    int computeRelease(int signalGreen, int nextAvailableCapacity) {
-        if (signalGreen == 0) return 0;
-        int release = min(queueCount, min((int)dischargeRate, nextAvailableCapacity));
-        if (release < 0) release = 0;
-        return release;
-    }
-
     // Display road state
     void display() const {
-        cout << "  Road " << source << "->" << destination << " | Flow: " << currentFlow << "/" << capacity
+        cout << "[BY ROAD]  Road " << source << "->" << destination << " | Flow: " << currentFlow << "/" << capacity
             << " | Queue: " << queueCount << " | Congestion: " << congestion << " | TravelTime: " << travelTime << endl;
     }
 };

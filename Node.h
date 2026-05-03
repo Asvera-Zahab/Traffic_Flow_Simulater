@@ -21,7 +21,7 @@ public:
 	void addOutgoingRoad(int roadId) { outgoingRoads.push_back(roadId); }
 
 	void display() const {
-		cout << "  Node " << id;
+		cout << "  [BY NODE] Node " << id;
 		cout << " (" << name << ")";
 		cout << " | Incoming roads: " << incomingRoads.size() << " | Outgoing roads: " << outgoingRoads.size() << endl;
 	}

@@ -17,9 +17,9 @@ const double INF = 1e18; // Infinity for Dijkstra
 
 class Graph {
 public:
-    map<int, Node> nodes;          // nodeId -> Node object
+    map<int, Node> nodes;          // nodeId Node object
     vector<Road> roads;            // All road objects
-    map<int, vector<int>> adjList; // nodeId -> list of road indices going OUT
+    map<int, vector<int>> adjList; // nodeId list of road indices going OUT
 
     // Add an intersection (vertex) to the graph
     void addVertex(int nodeId, string name = "") {
@@ -81,7 +81,7 @@ public:
 
     // Display full graph structure
     void displayGraph() const {
-        cout << "\n=== ROAD NETWORK ===" << endl;
+        cout << "\n=== ROAD NETWORK [BY GRAPH]===" << endl;
         cout << "Nodes: " << nodes.size() << " | Roads: " << roads.size() << endl;
         for (auto& kv : nodes) {
             kv.second.display();
@@ -95,7 +95,7 @@ public:
     // Display current traffic state (for each step summary)
     void displayTrafficState() const {
         for (auto& r : roads) {
-            cout << "  Road " << r.source << "->" << r.destination
+            cout << " [BY GRAPH] Road " << r.source << "->" << r.destination
                 << " | Flow: " << r.currentFlow << "/" << r.capacity
                 << " | Queue: " << r.queueCount
                 << " | Congestion: " << r.congestion
@@ -105,10 +105,7 @@ public:
 
     // Section 4.7: Dijkstra's Shortest Path Algorithm
     // cost(eij) = wij(t) (current travel time)
-    // Returns path as sequence of node IDs
-    // Returns empty vector if no path found
     vector<int> shortestPathDijkstra(int startNode, int endNode) const {
-        // pair<cost, nodeId>
         priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
 
         map<int, double> dist;

@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include <iostream>
 #include <string>
-#include <cstdlib>
 #include <ctime>
 #include <vector>
 using namespace std;
@@ -9,9 +8,7 @@ using namespace std;
 
 class Utility {
 public:
-	//makes random no at start
 	static void initRandom() { srand((unsigned int)time(0)); }
-	
 	//Random number in range
 	static int randomInt(int low, int high) {
 		if (high < low) return low;
@@ -41,32 +38,9 @@ public:
 		printDivider('-');
 	}
 
-	// Check if a node ID is valid in a list
-	static bool isValidNode(int nodeId, vector<int>& nodeIds) {
-		for (int n : nodeIds) {
-			if (n == nodeId) return true;
-		}
-		return false;
-	}
-
+	
 	static string formatDouble(double val) {
 		return to_string(val).substr(0, to_string(val).find('.') + 3);
-	}
-
-	static void printCongestionBar(double rho) {
-		int filled = (int)(rho * 10);   // convert 0.0–1.0 → 0–10
-
-		if (filled > 10) filled = 10;
-		if (filled < 0) filled = 0;
-
-		cout << "[";
-
-		for (int i = 0; i < 10; i++) {
-			if (i < filled) cout << "#";
-			else cout << ".";
-		}
-
-		cout << "] " << rho;
 	}
 };
 

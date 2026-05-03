@@ -1,14 +1,15 @@
+[FILE MANAGER]
 ------------------------------------
   TRAFFIC SIMULATION REPORT  
 ------------------------------------
-Total Simulation Steps : 20
-Vehicles Completed     : 4
+Total Simulation Steps : 50
+Vehicles Completed     : 20
 Vehicles Still Waiting : 0
 -----------------------------------
-Average Travel Time    : 2.25 steps
-Total Delay            : 1.01818 steps
-Throughput             : 0.2 vehicles/step
-Average Congestion     : 0.00397959
-Most Congested Road ID : 4
-Most Busy Node ID      : 3
+Average Travel Time    : 4 steps
+Total Delay            : 33.0091 steps
+Throughput             : 0.4 vehicles/step
+Average Congestion     : 0.0100544
+Most Congested Road ID : 1
+Most Busy Node ID      : 2
 ------------------------------------
