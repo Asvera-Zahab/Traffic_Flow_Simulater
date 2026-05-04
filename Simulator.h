@@ -27,10 +27,10 @@ struct SimEvent {
 
 class Simulator {
 public:
-    Graph graph;
-    vector<Vehicle> vehicles;
-    map<int, TrafficSignal> signals;
-    vector<SimEvent> events;
+    Graph graph;  //intersections
+    vector<Vehicle> vehicles;  //src,destination,path,state
+    map<int, TrafficSignal> signals; //signal incoming road
+    vector<SimEvent> events; //predefined
 
     int currentStep;
     int totalSteps;
@@ -76,7 +76,7 @@ public:
         graph.addEdge(0, 2, 1.5, 50.0, 8, 3.0);   // Urban road
         graph.addEdge(1, 2, 1.0, 60.0, 6, 2.0);   // Connector road
         graph.addEdge(1, 3, 3.0, 90.0, 14, 5.0);  // Expressway
-        graph.addEdge(2, 3, 1.2, 40.0, 5, 2.0);   // Narrow road (congestion hotspot)
+        graph.addEdge(2, 3, 1.2, 40.0, 5, 2.0);   // Narrow road
         graph.addEdge(3, 4, 2.5, 70.0, 10, 3.0);  // Final stretch
         graph.addEdge(2, 4, 2.0, 55.0, 7, 3.0);   // Bypass road
 
@@ -89,6 +89,7 @@ public:
         for (auto& kv : graph.nodes) {
             int nid = kv.first;
             vector<int>& inRoads = kv.second.incomingRoads;
+            //no incoming road no signal
             if (!inRoads.empty())
                 signals[nid] = TrafficSignal(nid, inRoads, true);
         }
@@ -122,8 +123,10 @@ public:
         for (SimEvent& e : events) {
             if (e.step != currentStep) continue;
             cout << "  [EVENT] " << e.description << endl;
+            //if road is ROAD_Block and roadid valid, set road capacity 0
             if (e.type == ROAD_BLOCK && e.roadId >= 0 && e.roadId < (int)graph.roads.size())
                 graph.roads[e.roadId].capacity = 0;
+            //Restore capacity
             if (e.type == ROAD_CLEAR && e.roadId >= 0 && e.roadId < (int)graph.roads.size())
                 graph.roads[e.roadId].capacity = 8;
             if (e.type == PEAK_TRAFFIC)
@@ -132,21 +135,29 @@ public:
     }
 
     void generateVehicles() {
+        //possible starting and destination
         vector<int> sources = { 0, 1, 2 };
         vector<int> dests = { 2, 3, 4 };
 
+        //attempts to generate vehicles
         int spawnCount, threshold;
+        //3 attempts, 80%
         if (peakMode) { spawnCount = 3; threshold = 80; }
+        //normal=1, 40%
         else { spawnCount = 1; threshold = 40; }
 
         for (int i = 0; i < spawnCount; i++) {
+            //run spawn attempts
             if (Utility::randomInt(1, 150) > threshold) continue;
+            //stop creating after 100 vehicles
             if (totalGenerated >= 100) break;
 
+            //random source and destination
             int src = sources[Utility::randomInt(0, (int)sources.size() - 1)];
             int dst = dests[Utility::randomInt(0, (int)dests.size() - 1)];
             if (src == dst) continue;
 
+            //vehicle
             Vehicle v(nextVehicleId++, src, dst, currentStep);
             vector<int> path = graph.shortestPathDijkstra(src, dst);
             if (path.empty()) continue;
@@ -166,6 +177,7 @@ public:
     // Section 4.6: rv(t+1) = rv(t) - 1
     map<int, int> moveVehicles() {
         map<int, int> roadDepartures;
+        //roadid and vehicels that fiished on that road
 
         for (Vehicle& v : vehicles) {
             if (v.status == ARRIVED) continue;
@@ -174,26 +186,11 @@ public:
                 if (finished) {
                     int rid = v.currentRoad;
                     roadDepartures[rid]++;
+                    //Finds which node this road leads to
                     int destNode = graph.roads[rid].destination;
                     v.arriveAtNode(destNode);
-
-                   /* if (destNode == v.destination) {
-                        v.markArrived(currentStep);
-                        totalCompleted++;
-                        int tt = v.getTravelTime();
-                        completedTravelTimes.push_back(tt);
-                        double freeTime = 0.0;
-                        for (int pi = 0; pi < (int)v.path.size() - 1; pi++) {
-                            int rid2 = graph.findRoadIndex(v.path[pi], v.path[pi + 1]);
-                            if (rid2 >= 0)
-                                freeTime += graph.roads[rid2].freeTravelTimeInSteps;
-                        }
-                        completedFreeTimes.push_back(freeTime);
-                        cout << "  [ARRIVED] Vehicle " << v.id
-                            << " reached destination " << v.destination
-                            << " in " << tt << " steps." << endl;
-                    }*/
                     if (destNode == v.destination) {
+                        //check if final destination reached
                         v.markArrived(currentStep);
                         totalCompleted++;
 
