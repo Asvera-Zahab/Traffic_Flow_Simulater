@@ -216,7 +216,7 @@ void drawCar(sf::RenderWindow& win, sf::Vector2f pos, float angle,
     tl.setPosition({ -11.f,4.5f }); win.draw(tl, rs);
     tl.setPosition({ -11.f,-4.5f }); win.draw(tl, rs);
 }
-// ── vehColor ──────────────────────────────────────────────────
+//vehColor
 sf::Color vehColor(int id, int status, float blend)
 {
     static const sf::Color pal[] = { {255,210,0},{0,200,255},{255,90,140},{80,255,170},{255,150,50},{190,90,255} };

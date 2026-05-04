@@ -160,11 +160,9 @@ public:
         file.close();
     }
 
-    static void exportReport(int totalSteps, int completed, int waiting,
-        double avgTravelTime, double totalDelay,
-        double throughput, double avgCongestion,
-        int mostCongestedRoad, int mostBusyNode,
-        string filename = "report.txt") {
+    //Written in file
+    static void exportReport(int totalSteps, int completed, int waiting,double avgTravelTime, double totalDelay,
+        double throughput, double avgCongestion,int mostCongestedRoad, int mostBusyNode,string filename = "report.txt") {
         ofstream file(filename, ios::out);
         if (!file.is_open()) {
             cout << "[FileManager] ERROR: Cannot open " << filename << endl;
@@ -189,9 +187,8 @@ public:
         cout << "[FileManager] Report saved to " << filename << endl;
     }
 
-    static void appendTrafficLog(int step, int moving, int waiting, int completed,
-        double avgCongestion, double avgTT,
-        string filename = "traffic_log.txt") {
+    static void appendTrafficLog(int step, int moving, int waiting, int completed,double avgCongestion, double avgTT,string filename = "traffic_log.txt") {
+        //new data after old data else it overwrites
         ofstream file(filename, ios::out | ios::app);
         if (!file.is_open()) return;
         file << "STEP [BY FILE MANAGER]" << step << endl;

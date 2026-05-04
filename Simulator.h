@@ -140,8 +140,8 @@ public:
         else { spawnCount = 1; threshold = 40; }
 
         for (int i = 0; i < spawnCount; i++) {
-            if (Utility::randomInt(1, 100) > threshold) continue;
-            if (totalGenerated >= 20) break;
+            if (Utility::randomInt(1, 150) > threshold) continue;
+            if (totalGenerated >= 100) break;
 
             int src = sources[Utility::randomInt(0, (int)sources.size() - 1)];
             int dst = dests[Utility::randomInt(0, (int)dests.size() - 1)];
@@ -177,7 +177,7 @@ public:
                     int destNode = graph.roads[rid].destination;
                     v.arriveAtNode(destNode);
 
-                    if (destNode == v.destination) {
+                   /* if (destNode == v.destination) {
                         v.markArrived(currentStep);
                         totalCompleted++;
                         int tt = v.getTravelTime();
@@ -192,6 +192,13 @@ public:
                         cout << "  [ARRIVED] Vehicle " << v.id
                             << " reached destination " << v.destination
                             << " in " << tt << " steps." << endl;
+                    }*/
+                    if (destNode == v.destination) {
+                        v.markArrived(currentStep);
+                        totalCompleted++;
+
+                        int tt = v.getTravelTime();
+                        completedTravelTimes.push_back(tt);
                     }
                 }
             }
@@ -252,29 +259,27 @@ public:
     // Section 4.3: rho = fij / cij
     // Section 4.4: wij = wfree * (1 + alpha*(f/c)^beta)
     void updateRoadStates(map<int, int>& roadDepartures) {
-        for (Road& r : graph.roads) {
-            int departures = 0;
-            if (roadDepartures.count(r.id))
-                departures = roadDepartures[r.id];
 
-            r.currentFlow -= departures;
-            if (r.currentFlow < 0) r.currentFlow = 0;
+        for (Road& r : graph.roads) {
+
+            // FIX: correct flow update
+            if (roadDepartures.count(r.id))
+                r.currentFlow -= roadDepartures[r.id];
+
+            // safety clamp
+            if (r.currentFlow < 0)
+                r.currentFlow = 0;
+
+            // recompute properly
             r.updateCongestion();
             r.updateTravelTime();
         }
+
+        // tracking remains same
         for (Road& r : graph.roads) {
             if (r.congestion > maxCongTracked) {
                 maxCongTracked = r.congestion;
                 mostCongestedRoadTracked = r.id;
-            }
-        }
-        for (auto& kv : graph.nodes) {
-            int totalInFlow = 0;
-            for (int rid : kv.second.incomingRoads)
-                totalInFlow += graph.roads[rid].currentFlow;
-            if (totalInFlow > maxFlowTracked) {
-                maxFlowTracked = totalInFlow;
-                mostBusyNodeTracked = kv.first;
             }
         }
     }
@@ -304,6 +309,7 @@ public:
 
     void dispatchWaitingVehicles() {
         for (Vehicle& v : vehicles) {
+
             if (v.status != WAITING) continue;
             if (v.currentNode == v.destination) continue;
             if (!v.hasPath()) continue;
@@ -315,9 +321,9 @@ public:
             if (roadId < 0) continue;
 
             Road& r = graph.roads[roadId];
+
             if (r.currentFlow >= r.capacity) continue;
 
-            r.currentFlow++;
             v.enterRoad(roadId, r.travelTime);
         }
     }

@@ -11,7 +11,7 @@ public:
    // length: road length (km), maxSpeed: max speed (km/h)
    // Returns travel time in simulation steps 
 	static double freeTravelTime(double length, double maxSpeed) {
-		if (maxSpeed <= 0) return 999.0;
+		if (maxSpeed <= 0) return 999.0; //INVALID
 		double timeInHours = length / maxSpeed;
 		double steps = timeInHours * 60.0; // convert to minutes :: steps
 		if (steps < 1.0) steps = 1.0;
@@ -61,7 +61,7 @@ public:
 	// queue: Qij(t), dischargeRate: muij
 	// nextAvailCap: cjk - fjk(t) (space on next road)
 	static int queueRelease(int signalGreen, int queueCount, int dischargeRate, int nextAvailableCapacity) {
-		if (signalGreen == 0) return 0;
+		if (signalGreen == 0) return 0;  //If red light no cars move
 		int release = min(queueCount, min((int)dischargeRate, nextAvailableCapacity));
 		if (release < 0) release = 0;
 		return release;
@@ -84,6 +84,7 @@ public:
 	static double totalDelay(vector<int>& travelTimes, vector<double>& freeTimes) {
 		double delay = 0.0;
 
+		// Use OF smaller size to avoid out-of-bounds access
 		int n = min(travelTimes.size(), freeTimes.size());
 
 		for (int i = 0; i < n; i++) {
@@ -98,6 +99,7 @@ public:
 
 	// Section 4.10: Average Congestion Level
 	// (1/|E|) * sum(fij / cij)
+	//E is size
 	static double averageCongestion(vector<double>& congestions) {
 		if (congestions.empty()) return 0.0;
 		double sum = 0.0;

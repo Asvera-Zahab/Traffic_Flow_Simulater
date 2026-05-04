@@ -8,7 +8,9 @@ using namespace std;
 
 class Utility {
 public:
+	// Initialize random seed using current system time
 	static void initRandom() { srand((unsigned int)time(0)); }
+	
 	//Random number in range
 	static int randomInt(int low, int high) {
 		if (high < low) return low;
@@ -41,6 +43,9 @@ public:
 	
 	static string formatDouble(double val) {
 		return to_string(val).substr(0, to_string(val).find('.') + 3);
+		//3.142: to_string(3.142) to "3.142"
+		//s.find('.'); 1
+		//substr(0, 1 + 3) → "3.14"
 	}
 };
 

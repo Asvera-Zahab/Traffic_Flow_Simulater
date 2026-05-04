@@ -17,7 +17,7 @@ public:
     int currentNode;             // Current intersection vehicle is at
     int currentRoad;             // Road ID the vehicle is currently on (-1 if at node)
     double remainingTravelTime;  // rv(t): steps left on current road
-    double entryTravelTime;      // travel time when vehicle FIRST entered road (fixed reference)
+    double entryTravelTime;      // travel time when vehicle FIRST entered road
     vector<int> path;            // Planned route (sequence of node IDs)
     int pathIndex;               // Current position in path
     int status;                  // WAITING, MOVING, or ARRIVED
@@ -81,6 +81,7 @@ public:
 
     // Get next node in planned path
     int getNextNode() const {
+        // Check if there is a next node in the path
         if (pathIndex + 1 < (int)path.size())
             return path[pathIndex + 1];
         return -1;
@@ -88,6 +89,8 @@ public:
 
     // Check if vehicle has a valid path loaded
     bool hasPath() const {
+        //if path not empty
+        //(int)path.size() - 1 index of the last valid node
         return !path.empty() && pathIndex < (int)path.size() - 1;
     }
 
