@@ -1,21 +1,6 @@
 ---VEHICLE COMPLETION FILE [BY FILE MANAGER] ---
-Vehicle 1 | 0->2 | Status: Arrived | TravelTime: 2 steps
-Vehicle 2 | 1->3 | Status: Arrived | TravelTime: 2 steps
-Vehicle 3 | 1->3 | Status: Arrived | TravelTime: 2 steps
-Vehicle 4 | 1->2 | Status: Arrived | TravelTime: 1 steps
-Vehicle 5 | 2->3 | Status: Arrived | TravelTime: 2 steps
-Vehicle 6 | 2->3 | Status: Arrived | TravelTime: 2 steps
-Vehicle 7 | 1->2 | Status: Arrived | TravelTime: 1 steps
-Vehicle 8 | 0->4 | Status: Arrived | TravelTime: 13 steps
-Vehicle 9 | 0->4 | Status: Arrived | TravelTime: 12 steps
-Vehicle 10 | 1->2 | Status: Arrived | TravelTime: 1 steps
-Vehicle 11 | 1->3 | Status: Arrived | TravelTime: 2 steps
-Vehicle 12 | 0->2 | Status: Arrived | TravelTime: 6 steps
-Vehicle 13 | 1->4 | Status: Arrived | TravelTime: 4 steps
-Vehicle 14 | 1->3 | Status: Arrived | TravelTime: 3 steps
-Vehicle 15 | 1->3 | Status: Arrived | TravelTime: 3 steps
-Vehicle 16 | 1->4 | Status: Arrived | TravelTime: 4 steps
-Vehicle 17 | 0->4 | Status: Arrived | TravelTime: 8 steps
-Vehicle 18 | 1->4 | Status: Arrived | TravelTime: 4 steps
-Vehicle 19 | 0->3 | Status: Arrived | TravelTime: 4 steps
-Vehicle 20 | 0->2 | Status: Arrived | TravelTime: 4 steps
+Vehicle 1 | 2->3 | Status: Arrived | TravelTime: 2 steps
+Vehicle 2 | 2->4 | Status: Arrived | TravelTime: 3 steps
+Vehicle 3 | 0->2 | Status: Arrived | TravelTime: 2 steps
+Vehicle 4 | 1->4 | Status: Moving
+Vehicle 5 | 1->2 | Status: Arrived | TravelTime: 1 steps

@@ -48,4 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="some.txt">
+      <Filter>Header Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

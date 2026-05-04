@@ -17,11 +17,13 @@ const double INF = 1e18; // Infinity for Dijkstra
 class Graph {
 public:
     map<int, Node> nodes;          // nodeId Node object
+    //stroes all intersections
     vector<Road> roads;            // All road objects
-    map<int, vector<int>> adjList; // nodeId list of road indices going OUT
+    map<int, vector<int>> adjList; // nodeId -> list of road indices going OUT
 
     // Add an intersection (vertex) to the graph
     void addVertex(int nodeId, string name = "") {
+        //add a vertex if it does not exists
         if (nodes.find(nodeId) == nodes.end()) {
             nodes[nodeId] = Node(nodeId, name);
             adjList[nodeId] = vector<int>();
@@ -34,6 +36,7 @@ public:
         addVertex(src);
         addVertex(dst);
 
+        //create road
         int roadId = (int)roads.size();
         Road r(roadId, src, dst, length, maxSpeed, capacity, discharge);
         roads.push_back(r);
@@ -56,17 +59,6 @@ public:
             if (roads[rid].destination == dst) return rid;
         }
         return -1;
-    }
-
-    // Get all neighbor node IDs of a given node
-    vector<int> getNeighbors(int nodeId) const {
-        vector<int> neighbors;
-        auto it = adjList.find(nodeId);
-        if (it == adjList.end()) return neighbors;
-        for (int rid : it->second) {
-            neighbors.push_back(roads[rid].destination);
-        }
-        return neighbors;
     }
 
     // Get available capacity on road between src->dst
@@ -105,9 +97,13 @@ public:
     // Section 4.7: Dijkstra's Shortest Path Algorithm
     // cost(eij) = wij(t) (current travel time)
     vector<int> shortestPathDijkstra(int startNode, int endNode) const {
+        //minimum
+        //type,container,comparator  greater creates a min heap ascendng priorty
         priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
 
         map<int, double> dist;
+
+        //previous intersection
         map<int, int> prev;
 
         // Initialize all distances to infinity
@@ -120,21 +116,29 @@ public:
         pq.push({ 0.0, startNode });
 
         while (!pq.empty()) {
+            // Get node distance
+            //u->id
             auto [cost, u] = pq.top();
             pq.pop();
 
             // Skip if we already found a better path
             if (cost > dist[u]) continue;
+            // Stop early if destination reached
             if (u == endNode) break;
 
+            // Get outgoing roads from node u
             auto it = adjList.find(u);
+
+            // Explore all neighbors of u
             if (it == adjList.end()) continue;
 
             for (int rid : it->second) {
                 const Road& r = roads[rid];
                 int v = r.destination;
+                // Calculate new distance 
                 double newDist = dist[u] + r.travelTime;
 
+                // If better path found, update it
                 if (newDist < dist[v]) {
                     dist[v] = newDist;
                     prev[v] = u;
@@ -145,6 +149,8 @@ public:
 
         // Reconstruct path
         vector<int> path;
+
+        // If destination unreachable, return empty path
         if (dist[endNode] == INF) return path;
 
         int cur = endNode;
