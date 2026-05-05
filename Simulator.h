@@ -142,9 +142,9 @@ public:
         //attempts to generate vehicles
         int spawnCount, threshold;
         //3 attempts, 80%
-        if (peakMode) { spawnCount = 3; threshold = 80; }
+        if (peakMode) { spawnCount = 5; threshold = 60; }
         //normal=1, 40%
-        else { spawnCount = 1; threshold = 40; }
+        else { spawnCount = 3; threshold = 50; }
 
         for (int i = 0; i < spawnCount; i++) {
             //run spawn attempts
@@ -155,6 +155,7 @@ public:
             //random source and destination
             int src = sources[Utility::randomInt(0, (int)sources.size() - 1)];
             int dst = dests[Utility::randomInt(0, (int)dests.size() - 1)];
+            if (src == 2 && dst == 4) continue;
             if (src == dst) continue;
 
             //vehicle
@@ -177,7 +178,6 @@ public:
     // Section 4.6: rv(t+1) = rv(t) - 1
     map<int, int> moveVehicles() {
         map<int, int> roadDepartures;
-        //roadid and vehicels that fiished on that road
 
         for (Vehicle& v : vehicles) {
             if (v.status == ARRIVED) continue;
@@ -186,16 +186,25 @@ public:
                 if (finished) {
                     int rid = v.currentRoad;
                     roadDepartures[rid]++;
-                    //Finds which node this road leads to
+
                     int destNode = graph.roads[rid].destination;
                     v.arriveAtNode(destNode);
+
                     if (destNode == v.destination) {
-                        //check if final destination reached
-                        v.markArrived(currentStep);
-                        totalCompleted++;
+                        v.markArrived(currentStep);   // only once
+                        totalCompleted++;              // only once
 
                         int tt = v.getTravelTime();
                         completedTravelTimes.push_back(tt);
+
+                        // Free travel time (no congestion, no waiting)
+                        double freeTime = 0.0;
+                        for (int i = 0; i + 1 < (int)v.path.size(); i++) {
+                            int roadId = graph.findRoadIndex(v.path[i], v.path[i + 1]);
+                            if (roadId >= 0)
+                                freeTime += graph.roads[roadId].travelTime;
+                        }
+                        completedFreeTimes.push_back(freeTime);
                     }
                 }
             }

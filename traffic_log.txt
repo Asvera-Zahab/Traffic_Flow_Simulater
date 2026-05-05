@@ -1,140 +1,140 @@
 STEP [BY FILE MANAGER]1
-  Vehicles Moving   : 0
+  Vehicles Moving   : 2
   Vehicles Waiting  : 0
   Completed         : 0
   Avg Congestion    : 0
   Avg Travel Time   : 0
 -----------------------------
 STEP [BY FILE MANAGER]2
-  Vehicles Moving   : 0
+  Vehicles Moving   : 2
   Vehicles Waiting  : 0
   Completed         : 0
   Avg Congestion    : 0
   Avg Travel Time   : 0
 -----------------------------
 STEP [BY FILE MANAGER]3
-  Vehicles Moving   : 0
+  Vehicles Moving   : 1
   Vehicles Waiting  : 0
-  Completed         : 0
+  Completed         : 2
   Avg Congestion    : 0
-  Avg Travel Time   : 0
+  Avg Travel Time   : 2
 -----------------------------
 STEP [BY FILE MANAGER]4
-  Vehicles Moving   : 0
+  Vehicles Moving   : 2
   Vehicles Waiting  : 0
-  Completed         : 0
+  Completed         : 2
   Avg Congestion    : 0
-  Avg Travel Time   : 0
+  Avg Travel Time   : 2
 -----------------------------
 STEP [BY FILE MANAGER]5
   Vehicles Moving   : 1
   Vehicles Waiting  : 0
-  Completed         : 0
+  Completed         : 3
   Avg Congestion    : 0
-  Avg Travel Time   : 0
+  Avg Travel Time   : 2
 -----------------------------
 STEP [BY FILE MANAGER]6
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 0
-  Completed         : 0
-  Avg Congestion    : 0
-  Avg Travel Time   : 0
------------------------------
-STEP [BY FILE MANAGER]7
-  Vehicles Moving   : 0
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]8
-  Vehicles Moving   : 0
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]9
-  Vehicles Moving   : 0
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]10
-  Vehicles Moving   : 0
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]11
-  Vehicles Moving   : 0
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]12
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]13
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]14
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 0
-  Completed         : 1
-  Avg Congestion    : 0
-  Avg Travel Time   : 2
------------------------------
-STEP [BY FILE MANAGER]15
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 0
-  Completed         : 2
-  Avg Congestion    : 0
-  Avg Travel Time   : 2.5
------------------------------
-STEP [BY FILE MANAGER]16
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 0
-  Completed         : 2
-  Avg Congestion    : 0
-  Avg Travel Time   : 2.5
------------------------------
-STEP [BY FILE MANAGER]17
-  Vehicles Moving   : 0
-  Vehicles Waiting  : 0
-  Completed         : 3
-  Avg Congestion    : 0
-  Avg Travel Time   : 2.33333
------------------------------
-STEP [BY FILE MANAGER]18
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 0
-  Completed         : 3
-  Avg Congestion    : 0
-  Avg Travel Time   : 2.33333
------------------------------
-STEP [BY FILE MANAGER]19
   Vehicles Moving   : 2
-  Vehicles Waiting  : 0
-  Completed         : 3
-  Avg Congestion    : 0
-  Avg Travel Time   : 2.33333
------------------------------
-STEP [BY FILE MANAGER]20
-  Vehicles Moving   : 1
   Vehicles Waiting  : 0
   Completed         : 4
   Avg Congestion    : 0
   Avg Travel Time   : 2
+-----------------------------
+STEP [BY FILE MANAGER]7
+  Vehicles Moving   : 4
+  Vehicles Waiting  : 0
+  Completed         : 4
+  Avg Congestion    : 0
+  Avg Travel Time   : 2
+-----------------------------
+STEP [BY FILE MANAGER]8
+  Vehicles Moving   : 3
+  Vehicles Waiting  : 0
+  Completed         : 5
+  Avg Congestion    : 0
+  Avg Travel Time   : 2
+-----------------------------
+STEP [BY FILE MANAGER]9
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 7
+  Avg Congestion    : 0
+  Avg Travel Time   : 2
+-----------------------------
+STEP [BY FILE MANAGER]10
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 8
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.25
+-----------------------------
+STEP [BY FILE MANAGER]11
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 8
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.25
+-----------------------------
+STEP [BY FILE MANAGER]12
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 8
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.25
+-----------------------------
+STEP [BY FILE MANAGER]13
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 9
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.44444
+-----------------------------
+STEP [BY FILE MANAGER]14
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 9
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.44444
+-----------------------------
+STEP [BY FILE MANAGER]15
+  Vehicles Moving   : 1
+  Vehicles Waiting  : 0
+  Completed         : 11
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.63636
+-----------------------------
+STEP [BY FILE MANAGER]16
+  Vehicles Moving   : 1
+  Vehicles Waiting  : 0
+  Completed         : 12
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.5
+-----------------------------
+STEP [BY FILE MANAGER]17
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 12
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.5
+-----------------------------
+STEP [BY FILE MANAGER]18
+  Vehicles Moving   : 3
+  Vehicles Waiting  : 0
+  Completed         : 12
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.5
+-----------------------------
+STEP [BY FILE MANAGER]19
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 0
+  Completed         : 13
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.46154
+-----------------------------
+STEP [BY FILE MANAGER]20
+  Vehicles Moving   : 1
+  Vehicles Waiting  : 0
+  Completed         : 14
+  Avg Congestion    : 0
+  Avg Travel Time   : 2.57143
 -----------------------------

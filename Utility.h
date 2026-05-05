@@ -10,6 +10,10 @@ class Utility {
 public:
 	// Initialize random seed using current system time
 	static void initRandom() { srand((unsigned int)time(0)); }
+
+	static void initRRandom(int seed = 42) {
+		srand(seed);
+	}
 	
 	//Random number in range
 	static int randomInt(int low, int high) {

@@ -1,219 +1,218 @@
-//// ============================================================
-//// Traffic Flow Optimization System
-//// Data Structures Used:
-////   - Graph (Adjacency List)  -> Road Network
-////   - Queue                   -> Vehicle queues at intersections
-////   - Map / Vector            -> Road and vehicle storage
-////   - Set                     -> Dijkstra's unvisited nodes
-////
-//// Algorithms:
-////   - Dijkstra's Shortest Path (Section 4.7)
-////   - BPR Congestion Model (Section 4.4)
-////   - Adaptive Signal Control (Section 4.8)
+// ============================================================
+// Traffic Flow Optimization System
+// Data Structures Used:
+//   - Graph (Adjacency List)  -> Road Network
+//   - Queue                   -> Vehicle queues at intersections
+//   - Map / Vector            -> Road and vehicle storage
+//   - Set                     -> Dijkstra's unvisited nodes
 //
-//#include <iostream>
-//#include <string>
-//#include "Graph.h"
-//#include "Node.h"
-//#include "Road.h"
-//#include "Vehicle.h"
-//#include "TrafficSignal.h"
-//#include "TrafficFormula.h"
-//#include "Simulator.h"
-//#include "FileManager.h"
-//#include "Utility.h"
-//
-//using namespace std;
-//
-//// Display the main menu
-//void printMenu() {
-//    cout << endl;
-//    Utility::printDivider('=');
-//    cout << "  TRAFFIC FLOW OPTIMIZATION SYSTEM" << endl;
-//    Utility::printDivider('=');
-//    cout << "  1. Run Full Simulation (50 steps)" << endl;
-//    cout << "  2. Run Quick Simulation (20 steps)" << endl;
-//    cout << "  3. View Road Network Structure" << endl;
-//    cout << "  4. View Shortest Path (Dijkstra Demo)" << endl;
-//    cout << "  5. Compare Static vs Adaptive Signals" << endl;
-//    cout << "  6. Exit" << endl;
-//    Utility::printDivider('=');
-//    cout << "  Enter choice: ";
-//}
-//
-//void dijkstraDemo(Graph& g) {
-//    Utility::printHeader("DIJKSTRA SHORTEST PATH DEMO");
-//
-//    // Display all nodes
-//    cout << "Available Nodes: ";
-//    for (auto& kv : g.nodes) cout << kv.first << " ";
-//    cout << endl;
-//
-//    int src = 0, dst = 4;
-//    cout << "Enter source node (0-4): ";
-//    cin >> src;
-//
-//    // Validate input
-//    if (g.nodes.find(src) == g.nodes.end()) {
-//        cout << "Invalid node. Using default: 0" << endl;
-//        src = 0;
-//    }
-//
-//    cout << "Enter destination node (0-4): ";
-//    cin >> dst;
-//
-//    if (g.nodes.find(dst) == g.nodes.end()) {
-//        cout << "Invalid node. Using default: 4" << endl;
-//        dst = 4;
-//    }
-//
-//    // Run Dijkstra
-//    vector<int> path = g.shortestPathDijkstra(src, dst);
-//
-//    cout << "\nShortest path from " << src << " to " << dst << ": ";
-//    if (path.empty()) {
-//        cout << "No path found." << endl;
-//    }
-//    else {
-//        for (int i = 0; i < (int)path.size(); i++) {
-//            cout << path[i];
-//            if (i < (int)path.size() - 1) cout << " -> ";
-//        }
-//        cout << endl;
-//
-//        // Show road details along path
-//        cout << "\nRoad details along path:" << endl;
-//        for (int i = 0; i < (int)path.size() - 1; i++) {
-//            int rid = g.findRoadIndex(path[i], path[i + 1]);
-//            if (rid >= 0) {
-//                Road& r = g.roads[rid];
-//                cout << "  " << path[i] << "->" << path[i + 1]
-//                    << " | Length: " << r.length << "km"
-//                    << " | Speed: " << r.maxSpeed << "km/h"
-//                    << " | TravelTime: " << Utility::formatDouble(r.travelTime) << " steps" << endl;
-//            }
-//        }
-//    }
-//}
-//
-//
-//void compareSignals() {
-//    Utility::printHeader("STATIC vs ADAPTIVE SIGNAL COMPARISON");
-//
-//    cout << "\n--- Running with STATIC (fixed timer) signals ---" << endl;
-//    {
-//        Simulator sim1;
-//        Utility::initRandom();
-//        sim1.buildCityGraph();
-//
-//        // Set up static signals
-//        for (auto& kv : sim1.graph.nodes) {
-//            int nid = kv.first;
-//            vector<int>& inRoads = kv.second.incomingRoads;
-//            if (!inRoads.empty()) {
-//                sim1.signals[nid] = TrafficSignal(nid, inRoads, false); // static mode
-//            }
-//        }
-//
-//        // Run for 20 steps only
-//        FileManager::clearLogFile("traffic_log.txt");
-//        FileManager::clearLogFile("roads.txt");
-//        sim1.run(20);
-//
-//        cout << "\n[STATIC] Completed: " << sim1.totalCompleted
-//            << " | Generated: " << sim1.totalGenerated << endl;
-//        double avgTT1 = TrafficFormula::averageTravelTime(sim1.completedTravelTimes);
-//        cout << "[STATIC] Average Travel Time: " << Utility::formatDouble(avgTT1) << " steps" << endl;
-//    }
-//
-//    cout << "\n--- Running with ADAPTIVE (queue-based) signals ---" << endl;
-//    {
-//        Simulator sim2;
-//        Utility::initRandom();
-//        sim2.buildCityGraph();
-//        sim2.setupSignals(); // adaptive by default
-//
-//        FileManager::clearLogFile("traffic_log.txt");
-//        FileManager::clearLogFile("roads.txt");
-//        sim2.run(20);
-//
-//        cout << "\n[ADAPTIVE] Completed: " << sim2.totalCompleted
-//            << " | Generated: " << sim2.totalGenerated << endl;
-//        double avgTT2 = TrafficFormula::averageTravelTime(sim2.completedTravelTimes);
-//        cout << "[ADAPTIVE] Average Travel Time: " << Utility::formatDouble(avgTT2) << " steps" << endl;
-//    }
-//
-//    cout << "\n[INFO] Adaptive signals prioritize roads with longest queues." << endl;
-//    cout << "[INFO] This reduces waiting time and improves overall throughput." << endl;
-//}
-//
-//
-//int main() {
-//    Utility::initRandom(); // Seed random number generator
-//
-//    int choice = 0;
-//    bool running = true;
-//
-//    Simulator mainSim;
-//    mainSim.buildCityGraph();
-//    mainSim.setupSignals();
-//    mainSim.scheduleEvents();
-//
-//    while (running) {
-//        printMenu();
-//
-//        // Input validation loop
-//        while (!(cin >> choice)) {
-//            cin.clear();
-//            cin.ignore(1000, '\n');
-//            cout << "  Invalid input. Enter a number (1-6): ";
-//        }
-//
-//        switch (choice) {
-//        case 1: {
-//            Simulator sim;
-//            Utility::initRandom();
-//            sim.buildCityGraph();
-//            sim.setupSignals();
-//            sim.scheduleEvents();
-//            sim.run(50);
-//            break;
-//        }
-//        case 2: {
-//            Simulator sim;
-//            Utility::initRandom();
-//            sim.buildCityGraph();
-//            sim.setupSignals();
-//            sim.run(20);
-//            break;
-//        }
-//        case 3: {
-//            // Show network
-//            mainSim.graph.displayGraph();
-//            cout << "\nCurrent Traffic State:" << endl;
-//            mainSim.graph.displayTrafficState();
-//            break;
-//        }
-//        case 4: {
-//            dijkstraDemo(mainSim.graph);
-//            break;
-//        }
-//        case 5: {
-//            compareSignals();
-//            break;
-//        }
-//        case 6: {
-//            cout << "\nExiting simulation. Output files saved." << endl;
-//            running = false;
-//            break;
-//        }
-//        default: {
-//            cout << "  Invalid choice. Please enter 1-6." << endl;
-//            break;
-//        }
-//        }
-//    }
-//
-//    return 0;
-//}
-//
+// Algorithms:
+//   - Dijkstra's Shortest Path (Section 4.7)
+//   - BPR Congestion Model (Section 4.4)
+//   - Adaptive Signal Control (Section 4.8)
+
+#include <iostream>
+#include <string>
+#include "Graph.h"
+#include "Node.h"
+#include "Road.h"
+#include "Vehicle.h"
+#include "TrafficSignal.h"
+#include "TrafficFormula.h"
+#include "Simulator.h"
+#include "FileManager.h"
+#include "Utility.h"
+
+using namespace std;
+
+// Display the main menu
+void printMenu() {
+    cout << endl;
+    Utility::printDivider('=');
+    cout << "  TRAFFIC FLOW OPTIMIZATION SYSTEM" << endl;
+    Utility::printDivider('=');
+    cout << "  1. Run Full Simulation (50 steps)" << endl;
+    cout << "  2. Run Quick Simulation (20 steps)" << endl;
+    cout << "  3. View Road Network Structure" << endl;
+    cout << "  4. View Shortest Path (Dijkstra Demo)" << endl;
+    cout << "  5. Compare Static vs Adaptive Signals" << endl;
+    cout << "  6. Exit" << endl;
+    Utility::printDivider('=');
+    cout << "  Enter choice: ";
+}
+
+void dijkstraDemo(Graph& g) {
+    Utility::printHeader("DIJKSTRA SHORTEST PATH DEMO");
+
+    // Display all nodes
+    cout << "Available Nodes: ";
+    for (auto& kv : g.nodes) cout << kv.first << " ";
+    cout << endl;
+
+    int src = 0, dst = 4;
+    cout << "Enter source node (0-4): ";
+    cin >> src;
+
+    // Validate input
+    if (g.nodes.find(src) == g.nodes.end()) {
+        cout << "Invalid node. Using default: 0" << endl;
+        src = 0;
+    }
+
+    cout << "Enter destination node (0-4): ";
+    cin >> dst;
+
+    if (g.nodes.find(dst) == g.nodes.end()) {
+        cout << "Invalid node. Using default: 4" << endl;
+        dst = 4;
+    }
+
+    // Run Dijkstra
+    vector<int> path = g.shortestPathDijkstra(src, dst);
+
+    cout << "\nShortest path from " << src << " to " << dst << ": ";
+    if (path.empty()) {
+        cout << "No path found." << endl;
+    }
+    else {
+        for (int i = 0; i < (int)path.size(); i++) {
+            cout << path[i];
+            if (i < (int)path.size() - 1) cout << " -> ";
+        }
+        cout << endl;
+
+        // Show road details along path
+        cout << "\nRoad details along path:" << endl;
+        for (int i = 0; i < (int)path.size() - 1; i++) {
+            int rid = g.findRoadIndex(path[i], path[i + 1]);
+            if (rid >= 0) {
+                Road& r = g.roads[rid];
+                cout << "  " << path[i] << "->" << path[i + 1]
+                    << " | Length: " << r.length << "km"
+                    << " | Speed: " << r.maxSpeed << "km/h"
+                    << " | TravelTime: " << Utility::formatDouble(r.travelTime) << " steps" << endl;
+            }
+        }
+    }
+}
+
+
+void compareSignals() {
+    Utility::printHeader("STATIC vs ADAPTIVE SIGNAL COMPARISON");
+
+    cout << "\n--- Running with STATIC (fixed timer) signals ---" << endl;
+    {
+        Simulator sim1;
+        Utility::initRRandom(42);
+        sim1.buildCityGraph();
+
+        // Set up static signals
+        for (auto& kv : sim1.graph.nodes) {
+            int nid = kv.first;
+            vector<int>& inRoads = kv.second.incomingRoads;
+            if (!inRoads.empty()) {
+                sim1.signals[nid] = TrafficSignal(nid, inRoads, false); // static mode
+            }
+        }
+
+        // Run for 20 steps only
+        FileManager::clearLogFile("traffic_log.txt");
+        FileManager::clearLogFile("roads.txt");
+        sim1.run(50);
+
+        cout << "\n[STATIC] Completed: " << sim1.totalCompleted
+            << " | Generated: " << sim1.totalGenerated << endl;
+        double avgTT1 = TrafficFormula::averageTravelTime(sim1.completedTravelTimes);
+        cout << "[STATIC] Average Travel Time: " << Utility::formatDouble(avgTT1) << " steps" << endl;
+    }
+
+    cout << "\n--- Running with ADAPTIVE (queue-based) signals ---" << endl;
+    {
+        Simulator sim2;
+        Utility::initRRandom(42);
+        sim2.buildCityGraph();
+        sim2.setupSignals(); // adaptive by default
+
+        FileManager::clearLogFile("traffic_log.txt");
+        FileManager::clearLogFile("roads.txt");
+        sim2.run(20);
+
+        cout << "\n[ADAPTIVE] Completed: " << sim2.totalCompleted
+            << " | Generated: " << sim2.totalGenerated << endl;
+        double avgTT2 = TrafficFormula::averageTravelTime(sim2.completedTravelTimes);
+        cout << "[ADAPTIVE] Average Travel Time: " << Utility::formatDouble(avgTT2) << " steps" << endl;
+    }
+
+    cout << "\n[INFO] Adaptive signals prioritize roads with longest queues." << endl;
+    cout << "[INFO] This reduces waiting time and improves overall throughput." << endl;
+}
+
+
+int main() {
+    Utility::initRandom(); // Seed random number generator
+
+    int choice = 0;
+    bool running = true;
+
+    Simulator mainSim;
+    mainSim.buildCityGraph();
+    mainSim.setupSignals();
+    mainSim.scheduleEvents();
+
+    while (running) {
+        printMenu();
+
+        // Input validation loop
+        while (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "  Invalid input. Enter a number (1-6): ";
+        }
+
+        switch (choice) {
+        case 1: {
+            Simulator sim;
+            Utility::initRandom();
+            sim.buildCityGraph();
+            sim.setupSignals();
+            sim.scheduleEvents();
+            sim.run(50);
+            break;
+        }
+        case 2: {
+            Simulator sim;
+            Utility::initRandom();
+            sim.buildCityGraph();
+            sim.setupSignals();
+            sim.run(20);
+            break;
+        }
+        case 3: {
+            // Show network
+            mainSim.graph.displayGraph();
+            cout << "\nCurrent Traffic State:" << endl;
+            mainSim.graph.displayTrafficState();
+            break;
+        }
+        case 4: {
+            dijkstraDemo(mainSim.graph);
+            break;
+        }
+        case 5: {
+            compareSignals();
+            break;
+        }
+        case 6: {
+            cout << "\nExiting simulation. Output files saved." << endl;
+            running = false;
+            break;
+        }
+        default: {
+            cout << "  Invalid choice. Please enter 1-6." << endl;
+            break;
+        }
+        }
+    }
+
+    return 0;
+}

@@ -3,12 +3,12 @@
   TRAFFIC SIMULATION REPORT  
 ------------------------------------
 Total Simulation Steps : 20
-Vehicles Completed     : 4
+Vehicles Completed     : 14
 Vehicles Still Waiting : 1
 -----------------------------------
-Average Travel Time    : 2 steps
-Total Delay            : 0 steps
-Throughput             : 0.2 vehicles/step
+Average Travel Time    : 2.57143 steps
+Total Delay            : 3.95455 steps
+Throughput             : 0.7 vehicles/step
 Average Congestion     : 0
 Most Congested Road ID : 0
 Most Busy Node ID      : 0
