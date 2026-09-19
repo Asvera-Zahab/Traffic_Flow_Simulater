@@ -176,6 +176,13 @@ public:
     }
 
     // Section 4.6: rv(t+1) = rv(t) - 1
+    // FIX: a vehicle that finishes a road but has NOT reached its final
+    // destination must join the queue Q_ij on the road it just left
+    // (queueCount++) so that releaseFromQueues()/signals can gate it on
+    // the next step, per Q_ij(t+1) = Q_ij(t) + x_ij(t) - d_ij(t).
+    // Previously queueCount was only ever decremented and never
+    // incremented anywhere, so it stayed at 0 forever and the whole
+    // signal-gated release path was dead code.
     map<int, int> moveVehicles() {
         map<int, int> roadDepartures;
 
@@ -188,6 +195,14 @@ public:
                     roadDepartures[rid]++;
 
                     int destNode = graph.roads[rid].destination;
+
+                    if (destNode != v.destination) {
+                        // Vehicle reached an intermediate intersection:
+                        // it now waits in that road's queue Q_ij(t),
+                        // not "for free" on the next road.
+                        graph.roads[rid].queueCount++;
+                    }
+
                     v.arriveAtNode(destNode);
 
                     if (destNode == v.destination) {
@@ -224,6 +239,9 @@ public:
     // Section 4.2: dij(t) = gij(t) * min(Qij, muij, cjk - fjk)
     // Releases vehicles that are queued at a node's incoming road and
     // moves them onto the next road in their path if the signal is green.
+    // FIX: now that queueCount is actually populated (see moveVehicles),
+    // this function is no longer dead code, and r.currentFlow++ / 
+    // r.queueCount-- correctly balance the flow/queue equations.
     void releaseFromQueues() {
         for (Road& r : graph.roads) {
             if (r.queueCount <= 0) continue;
@@ -241,6 +259,11 @@ public:
                 if (released >= maxRelease) break;
                 if (v.status != WAITING) continue;
                 if (v.currentNode != destNode) continue;
+                // Only vehicles that actually arrived via a road (i.e.
+                // are sitting in THIS road's queue) get released here.
+                // Vehicles still at their original source node (never
+                // queued) are handled by dispatchWaitingVehicles().
+                if (v.pathIndex == 0 && v.currentNode == v.source) continue;
                 if (!v.hasPath()) continue;
 
                 int nextNode = v.getNextNode();
@@ -268,7 +291,8 @@ public:
 
         for (Road& r : graph.roads) {
 
-            // FIX: correct flow update
+            // Departures leaving the road (a_ij handled separately at the
+            // point of entry in dispatchWaitingVehicles()/releaseFromQueues())
             if (roadDepartures.count(r.id))
                 r.currentFlow -= roadDepartures[r.id];
 
@@ -313,12 +337,26 @@ public:
         }
     }
 
+    // FIX: this now only dispatches vehicles that are still sitting at
+    // their ORIGINAL source node and have never been queued on a road
+    // (pathIndex == 0 && currentNode == source). Every other WAITING
+    // vehicle (i.e. one that has already traversed at least one road)
+    // is queued on the road it arrived via and must go through the
+    // signal-gated releaseFromQueues() instead. This prevents a vehicle
+    // from being queued and immediately un-queued bypassing the signal
+    // in the same step, and restores meaning to r.capacity checks.
+    // FIX: r.currentFlow is now actually incremented when a vehicle
+    // enters a road here -- previously it was only ever decremented in
+    // updateRoadStates(), so congestion (f/c) could never rise above 0.
     void dispatchWaitingVehicles() {
         for (Vehicle& v : vehicles) {
 
             if (v.status != WAITING) continue;
             if (v.currentNode == v.destination) continue;
             if (!v.hasPath()) continue;
+
+            // Only vehicles still at their original source, never queued.
+            if (!(v.pathIndex == 0 && v.currentNode == v.source)) continue;
 
             int nextNode = v.getNextNode();
             if (nextNode < 0) continue;
@@ -330,6 +368,7 @@ public:
 
             if (r.currentFlow >= r.capacity) continue;
 
+            r.currentFlow++;
             v.enterRoad(roadId, r.travelTime);
         }
     }
