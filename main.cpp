@@ -21,12 +21,18 @@ SimSnapshot buildFakeSnapshot(int step) {
     snap.generatedCount = 78;
     snap.avgCongestion = 0.42f;
 
+    // Layout note: this graph is a "fan" -- Lahore connects to all four
+    // other nodes, while Karachi-Islamabad-Murree-Kashmir form a simple
+    // chain (0-1, 1-3, 3-4) around it. Placing Lahore as a central hub
+    // with the other four arranged along an arc in that chain order gives
+    // a ZERO-CROSSING layout: the four spokes go straight to the hub, and
+    // the three chain edges only ever connect adjacent points on the arc.
     snap.nodes = {
-        { 0, "Karachi",   120.f, 90.f },
-        { 1, "Islamabad", 380.f, 60.f },
-        { 2, "Lahore",    220.f, 320.f },
-        { 3, "Murree",    620.f, 220.f },
-        { 4, "Kashmir",   700.f, 480.f },
+        { 0, "Karachi",   330.f, 190.f },  // arc point 1
+        { 1, "Islamabad", 640.f, 130.f },  // arc point 2
+        { 2, "Lahore",    560.f, 420.f },  // hub (connects to all 4 others)
+        { 3, "Murree",    920.f, 220.f },  // arc point 3
+        { 4, "Kashmir",  1060.f, 430.f },  // arc point 4
     };
 
     bool road1Blocked = (step >= 15 && step < 25); // matches scheduleEvents() in Simulator.h
@@ -41,11 +47,17 @@ SimSnapshot buildFakeSnapshot(int step) {
         { 6, 2, 4, 5, 7, 0, 0.55f, false },
     };
 
+    // A handful of vehicles per road (black dots), spread along each road
+    // so the map reads as "busy" the way the reference image does.
     snap.vehicles = {
-        { 100, 3, 0.35f },
-        { 101, 2, 0.60f },
-        { 102, 4, 0.20f },
+        { 100, 0, 0.15f }, { 101, 0, 0.55f },
+        { 102, 2, 0.30f }, { 103, 2, 0.70f },
+        { 104, 3, 0.20f }, { 105, 3, 0.45f }, { 106, 3, 0.80f },
+        { 107, 4, 0.35f }, { 108, 4, 0.65f },
+        { 109, 5, 0.50f },
+        { 110, 6, 0.25f }, { 111, 6, 0.75f },
     };
+    if (!road1Blocked) snap.vehicles.push_back({ 112, 1, 0.40f });
 
     // signals: which road currently has green at each intersection
     snap.signals = {

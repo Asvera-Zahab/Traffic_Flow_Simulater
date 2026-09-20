@@ -6,6 +6,10 @@
 // no spawning). Call Renderer::render(snapshot) once per step
 // from your own simulation loop.
 //
+// Visual style: top-down "game map" look (grass background,
+// asphalt roads with dashed lane markings, dark label boxes,
+// one colored signal square per incoming road, black car dots).
+//
 // Built against SFML 3.1 (C++17).
 // ============================================================
 
@@ -87,32 +91,42 @@ private:
     bool paused;
     float speedMultiplier;
 
-    // Layout constants (pixels)
-    static constexpr float NODE_RADIUS = 16.f;
-    static constexpr float ROAD_THICKNESS = 6.f;
-    static constexpr float VEHICLE_RADIUS = 5.f;
-    static constexpr float SIGNAL_RADIUS = 7.f;
-    static constexpr float LEFT_PANEL_WIDTH = 210.f;
-    static constexpr float BOTTOM_BAR_HEIGHT = 30.f;
-    static constexpr float TRIM = NODE_RADIUS + 4.f; // keep roads off node circles
+    // Decorative background (bushes/trees), generated once so it
+    // doesn't jitter or cost anything per-frame.
+    std::vector<sf::Vector2f> decorPositions;
+    std::vector<float> decorRadii;
+    void generateBackgroundDecor();
 
-    sf::Vector2f mapOffset() const { return { LEFT_PANEL_WIDTH, 0.f }; }
-    sf::Vector2f toScreen(sf::Vector2f p) const { return p + mapOffset(); }
-    sf::Vector2f toScreen(float x, float y) const { return toScreen(sf::Vector2f{ x, y }); }
+    // Layout constants (pixels)
+    static constexpr float ROAD_THICKNESS = 34.f;
+    static constexpr float STUB_ROAD_THICKNESS = 24.f;
+    static constexpr float STUB_LENGTH = 90.f;
+    static constexpr float VEHICLE_RADIUS = 4.f;
+    static constexpr float SIGNAL_SIZE = 18.f;          // side length of the signal square
+    static constexpr float BOTTOM_BAR_HEIGHT = 26.f;
+    static constexpr float TRIM = 34.f;                  // keep road surfaces off junction label boxes
+
+    sf::Vector2f toScreen(sf::Vector2f p) const { return p; }
+    sf::Vector2f toScreen(float x, float y) const { return { x, y }; }
 
     bool loadBestAvailableFont();
     sf::Text makeText(const std::string& str, unsigned int size, sf::Color color) const;
 
     sf::Color congestionColor(float congestion, bool blocked) const;
+    sf::RectangleShape roundedLabelBox(sf::Vector2f center, sf::Vector2f size, sf::Color fill) const;
 
-    void drawGrid();
-    void drawThickLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
+    void drawBackground();
+    void drawRoadSurface(sf::Vector2f a, sf::Vector2f b, float thickness);
+    void drawJunctionPad(sf::Vector2f pos, float thickness);
+    void drawDashedLaneLine(sf::Vector2f a, sf::Vector2f b);
     void drawDashedThickLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
-    void drawThinDashedConnector(sf::Vector2f a, sf::Vector2f b, sf::Color color);
-    void drawArrowHead(sf::Vector2f tip, sf::Vector2f dir, sf::Color color);
+    void drawArrowHead(sf::Vector2f tip, sf::Vector2f dir, sf::Color color, float size = 12.f);
 
+    void drawTitleBox(const SimSnapshot& snap);
+    void drawStatsBox(const SimSnapshot& snap);
     void drawRoads(const SimSnapshot& snap, const std::map<int, NodeView>& nodeById);
-    void drawNodes(const SimSnapshot& snap);
+    void drawExternalStubs(const SimSnapshot& snap, const std::map<int, NodeView>& nodeById);
+    void drawJunctionLabels(const SimSnapshot& snap);
     void drawVehicles(const SimSnapshot& snap,
         const std::map<int, RoadView>& roadById,
         const std::map<int, NodeView>& nodeById);
@@ -120,7 +134,7 @@ private:
         const std::map<int, RoadView>& roadById,
         const std::map<int, NodeView>& nodeById);
 
-    void drawLegend();
-    void drawHud(const SimSnapshot& snap);
+    void drawLegend(const SimSnapshot& snap);
+    void drawCompass();
     void drawControlsStrip();
 };
