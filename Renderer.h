@@ -6,9 +6,13 @@
 // no spawning). Call Renderer::render(snapshot) once per step
 // from your own simulation loop.
 //
-// Visual style: top-down "game map" look (grass background,
-// asphalt roads with dashed lane markings, dark label boxes,
-// one colored signal square per incoming road, black car dots).
+// Visual style: "traffic monitor" dashboard look -- plain dark
+// navy background, hollow colored ring per junction (fixed
+// radius, city name in a small pill above it), thin roads
+// colored by congestion (green/amber/red), red dashed line for
+// a blocked road, a small arrow at the destination end of each
+// road (stopped short of the ring, never overlapping it), and a
+// real red/yellow/green traffic-light icon per incoming road.
 //
 // Built against SFML 3.1 (C++17).
 // ============================================================
@@ -65,19 +69,10 @@ public:
     explicit Renderer(unsigned int width = 1280, unsigned int height = 720,
         const std::string& title = "Traffic Flow Simulation");
 
-    // True while the window is still open. Drive your loop with this.
     bool isOpen() const;
-
-    // Poll and handle SFML events: window close, ESC to quit,
-    // SPACE to toggle pause, +/- to adjust speed. Call once per frame,
-    // BEFORE render(), from your own loop.
     void pollEvents();
-
-    // Draw one full frame from the given snapshot. Does one
-    // clear -> draw everything -> display cycle internally.
     void render(const SimSnapshot& snapshot);
 
-    // Renderer-tracked UI state your simulation loop can read.
     bool isPaused() const { return paused; }
     float getSpeedMultiplier() const { return speedMultiplier; }
 
@@ -91,20 +86,14 @@ private:
     bool paused;
     float speedMultiplier;
 
-    // Decorative background (bushes/trees), generated once so it
-    // doesn't jitter or cost anything per-frame.
-    std::vector<sf::Vector2f> decorPositions;
-    std::vector<float> decorRadii;
-    void generateBackgroundDecor();
-
     // Layout constants (pixels)
-    static constexpr float ROAD_THICKNESS = 34.f;
-    static constexpr float STUB_ROAD_THICKNESS = 24.f;
-    static constexpr float STUB_LENGTH = 90.f;
-    static constexpr float VEHICLE_RADIUS = 4.f;
-    static constexpr float SIGNAL_SIZE = 18.f;          // side length of the signal square
+    static constexpr float RING_RADIUS = 26.f;          // fixed -- the name lives in a separate pill, not inside the ring
+    static constexpr float RING_THICKNESS = 4.5f;
+    static constexpr float ROAD_THICKNESS = 5.f;
+    static constexpr float VEHICLE_RADIUS = 4.5f;
+    static constexpr float SIGNAL_DOT_RADIUS = 7.f;      // simple colored dot, not a 3-light housing
+    static constexpr float STUB_LENGTH = 80.f;
     static constexpr float BOTTOM_BAR_HEIGHT = 26.f;
-    static constexpr float TRIM = 34.f;                  // keep road surfaces off junction label boxes
 
     sf::Vector2f toScreen(sf::Vector2f p) const { return p; }
     sf::Vector2f toScreen(float x, float y) const { return { x, y }; }
@@ -113,14 +102,14 @@ private:
     sf::Text makeText(const std::string& str, unsigned int size, sf::Color color) const;
 
     sf::Color congestionColor(float congestion, bool blocked) const;
+    sf::Color nodeColor(const std::string& name, int id) const;
     sf::RectangleShape roundedLabelBox(sf::Vector2f center, sf::Vector2f size, sf::Color fill) const;
 
     void drawBackground();
-    void drawRoadSurface(sf::Vector2f a, sf::Vector2f b, float thickness);
-    void drawJunctionPad(sf::Vector2f pos, float thickness);
-    void drawDashedLaneLine(sf::Vector2f a, sf::Vector2f b);
-    void drawDashedThickLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
-    void drawArrowHead(sf::Vector2f tip, sf::Vector2f dir, sf::Color color, float size = 12.f);
+    void drawLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
+    void drawDashedLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
+    void drawArrowHead(sf::Vector2f tip, sf::Vector2f dir, sf::Color color, float size = 10.f);
+    void drawSignalDot(sf::Vector2f pos, int roadId, bool green, bool blocked);
 
     void drawTitleBox(const SimSnapshot& snap);
     void drawStatsBox(const SimSnapshot& snap);

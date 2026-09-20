@@ -81,21 +81,43 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
         snap.roads.push_back(rv);
     }
 
-    // Vehicles: only ones actually MOVING have a meaningful
-    // road+progress (waiting/arrived vehicles aren't drawn as dots
-    // on a road, matching the original VehicleView contract).
+    // Vehicles.
+    //
+    // MOVING vehicles get an interpolated position along their current
+    // road, as before.
+    //
+    // WAITING vehicles that have already traveled at least one road (i.e.
+    // they reached an intersection and are now queued behind a red
+    // signal) are ALSO drawn now -- parked near the end of the road they
+    // just arrived on -- instead of being skipped. We use Vehicle::lastRoadId
+    // directly (set in enterRoad()/arriveAtNode()) rather than inferring it
+    // from path[pathIndex-1]: a reroute resets pathIndex to 0, which would
+    // silently break that inference and make the vehicle vanish again the
+    // moment it got rerouted while still queued. lastRoadId survives reroutes.
+    // Multiple vehicles queued on the same road are staggered backwards so
+    // the queue reads as a visible line of stopped cars, not overlapping dots.
+    //
+    // A vehicle still sitting at its original source (never entered the
+    // network yet, lastRoadId == -1) has no road to sit on, so it still
+    // isn't drawn -- matching the original contract.
+    std::map<int, int> queuedOnRoad;
     for (const Vehicle& v : sim.vehicles) {
-        if (v.status != MOVING) continue;
-
-        float progress = 0.f;
-        if (v.entryTravelTime > 0.0) {
-            float base = 1.f - static_cast<float>(v.remainingTravelTime / v.entryTravelTime);
-            float extra = stepFraction / static_cast<float>(v.entryTravelTime);
-            // Cap just under 1 so a car never visually reaches the
-            // node before the sim tick that actually delivers it there.
-            progress = std::clamp(base + extra, 0.f, 0.98f);
+        if (v.status == MOVING) {
+            float progress = 0.f;
+            if (v.entryTravelTime > 0.0) {
+                float base = 1.f - static_cast<float>(v.remainingTravelTime / v.entryTravelTime);
+                float extra = stepFraction / static_cast<float>(v.entryTravelTime);
+                // Cap just under 1 so a car never visually reaches the
+                // node before the sim tick that actually delivers it there.
+                progress = std::clamp(base + extra, 0.f, 0.98f);
+            }
+            snap.vehicles.push_back({ v.id, v.currentRoad, progress });
         }
-        snap.vehicles.push_back({ v.id, v.currentRoad, progress });
+        else if (v.status == WAITING && v.currentNode != v.destination && v.lastRoadId >= 0) {
+            int stackPos = queuedOnRoad[v.lastRoadId]++;
+            float progress = std::max(0.55f, 0.95f - 0.06f * (float)stackPos);
+            snap.vehicles.push_back({ v.id, v.lastRoadId, progress });
+        }
     }
 
     // Signals
