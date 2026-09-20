@@ -1,93 +1,137 @@
 ﻿// ============================================================
-// main.cpp - DEMO ONLY.
-// Shows how to drive Renderer::render() from your own loop.
-// Replace buildFakeSnapshot() with a function that reads your
-// real Simulator/Graph/Vehicle state and fills a SimSnapshot.
+// main.cpp
+// Drives Renderer::render() from the REAL Simulator (Graph +
+// Vehicle + TrafficSignal state), not a hardcoded fake snapshot.
+//
+// Two independent clocks:
+//   - sim clock: fires roughly every `secondsPerStep` and calls
+//     sim.stepOnce() ONCE. This is where flow/queue/signal state
+//     actually changes -- exactly as it did in the console version.
+//   - render clock: runs every frame (60 fps via the window's
+//     frame limiter) and draws a snapshot built from the sim's
+//     CURRENT state, with vehicle progress interpolated forward
+//     by however much of the current step-interval has elapsed.
+//     That's what makes cars glide smoothly instead of teleporting
+//     once per tick.
 // ============================================================
 
 #include "Renderer.h"
-#include <cmath>
-#include <vector>
+#include "Simulator.h"
+#include <algorithm>
+#include <map>
 
-// Builds a snapshot for the demo city graph (matches Simulator::buildCityGraph):
-// 0 Karachi, 1 Islamabad, 2 Lahore, 3 Murree, 4 Kashmir
-// roads: 0:(0->1) 1:(0->2) 2:(1->2) 3:(1->3) 4:(2->3) 5:(3->4) 6:(2->4)
-SimSnapshot buildFakeSnapshot(int step) {
+// Screen layout for the 5-node demo city graph built by
+// Simulator::buildCityGraph(). If you change that graph's nodes,
+// update this table (falls back to a default spot for anything
+// not listed here so it never crashes on a bigger graph).
+// Same "fan" layout used by the old fake snapshot: Lahore (2) is
+// the hub connecting to all four others, which sit on an arc.
+static const std::map<int, sf::Vector2f> kNodeLayout = {
+    { 0, { 330.f, 190.f } },  // Karachi
+    { 1, { 640.f, 130.f } },  // Islamabad
+    { 2, { 560.f, 420.f } },  // Lahore (hub)
+    { 3, { 920.f, 220.f } },  // Murree
+    { 4, { 1060.f, 430.f } }, // Kashmir
+};
+
+// Builds a SimSnapshot from the simulator's live state.
+// stepFraction (0..1) is how far we are into the CURRENT sim tick,
+// used purely to interpolate vehicle dots forward visually; it never
+// touches actual simulation state.
+SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
     SimSnapshot snap;
-    snap.step = step;
-    snap.movingCount = 12;
-    snap.waitingCount = 5;
-    snap.arrivedCount = 61;
-    snap.generatedCount = 78;
-    snap.avgCongestion = 0.42f;
+    snap.step = sim.currentStep;
 
-    // Layout note: this graph is a "fan" -- Lahore connects to all four
-    // other nodes, while Karachi-Islamabad-Murree-Kashmir form a simple
-    // chain (0-1, 1-3, 3-4) around it. Placing Lahore as a central hub
-    // with the other four arranged along an arc in that chain order gives
-    // a ZERO-CROSSING layout: the four spokes go straight to the hub, and
-    // the three chain edges only ever connect adjacent points on the arc.
-    snap.nodes = {
-        { 0, "Karachi",   330.f, 190.f },  // arc point 1
-        { 1, "Islamabad", 640.f, 130.f },  // arc point 2
-        { 2, "Lahore",    560.f, 420.f },  // hub (connects to all 4 others)
-        { 3, "Murree",    920.f, 220.f },  // arc point 3
-        { 4, "Kashmir",  1060.f, 430.f },  // arc point 4
-    };
+    int moving = 0, waiting = 0;
+    for (const Vehicle& v : sim.vehicles) {
+        if (v.status == MOVING) moving++;
+        else if (v.status == WAITING && v.currentNode != v.destination) waiting++;
+    }
+    snap.movingCount = moving;
+    snap.waitingCount = waiting;
+    snap.arrivedCount = sim.totalCompleted;
+    snap.generatedCount = sim.totalGenerated;
 
-    bool road1Blocked = (step >= 15 && step < 25); // matches scheduleEvents() in Simulator.h
+    double sumCong = 0.0;
+    for (const Road& r : sim.graph.roads) sumCong += r.congestion;
+    snap.avgCongestion = sim.graph.roads.empty()
+        ? 0.f
+        : static_cast<float>(sumCong / sim.graph.roads.size());
 
-    snap.roads = {
-        { 0, 0, 1, 4, 12, 0, 0.20f, false },
-        { 1, 0, 2, road1Blocked ? 0 : 5, 8, road1Blocked ? 0 : 1, road1Blocked ? 0.f : 0.55f, road1Blocked },
-        { 2, 1, 2, 3, 6, 0, 0.30f, false },
-        { 3, 1, 3, 13, 14, 4, 0.90f, false },
-        { 4, 2, 3, 4, 5, 1, 0.60f, false },
-        { 5, 3, 4, 7, 10, 1, 0.25f, false },
-        { 6, 2, 4, 5, 7, 0, 0.55f, false },
-    };
+    // Nodes
+    for (const auto& kv : sim.graph.nodes) {
+        const Node& n = kv.second;
+        sf::Vector2f pos{ 100.f, 100.f };
+        auto it = kNodeLayout.find(n.id);
+        if (it != kNodeLayout.end()) pos = it->second;
+        snap.nodes.push_back({ n.id, n.name, pos.x, pos.y });
+    }
 
-    // A handful of vehicles per road (black dots), spread along each road
-    // so the map reads as "busy" the way the reference image does.
-    snap.vehicles = {
-        { 100, 0, 0.15f }, { 101, 0, 0.55f },
-        { 102, 2, 0.30f }, { 103, 2, 0.70f },
-        { 104, 3, 0.20f }, { 105, 3, 0.45f }, { 106, 3, 0.80f },
-        { 107, 4, 0.35f }, { 108, 4, 0.65f },
-        { 109, 5, 0.50f },
-        { 110, 6, 0.25f }, { 111, 6, 0.75f },
-    };
-    if (!road1Blocked) snap.vehicles.push_back({ 112, 1, 0.40f });
+    // Roads
+    for (const Road& r : sim.graph.roads) {
+        RoadView rv;
+        rv.id = r.id;
+        rv.srcNode = r.source;
+        rv.dstNode = r.destination;
+        rv.flow = r.currentFlow;
+        rv.capacity = r.capacity;
+        rv.queueLen = r.queueCount;
+        rv.congestion = static_cast<float>(r.congestion);
+        rv.blocked = (r.capacity == 0);
+        snap.roads.push_back(rv);
+    }
 
-    // signals: which road currently has green at each intersection
-    snap.signals = {
-        { 1, 0 }, // Islamabad: only incoming road (0) is green
-        { 2, 2 }, // Lahore: road 2 green (road 1 is blocked, out of contention)
-        { 3, 3 }, // Murree: road 3 green (highest queue), road 4 red
-        { 4, 5 }, // Kashmir: road 5 green, road 6 red
-    };
+    // Vehicles: only ones actually MOVING have a meaningful
+    // road+progress (waiting/arrived vehicles aren't drawn as dots
+    // on a road, matching the original VehicleView contract).
+    for (const Vehicle& v : sim.vehicles) {
+        if (v.status != MOVING) continue;
+
+        float progress = 0.f;
+        if (v.entryTravelTime > 0.0) {
+            float base = 1.f - static_cast<float>(v.remainingTravelTime / v.entryTravelTime);
+            float extra = stepFraction / static_cast<float>(v.entryTravelTime);
+            // Cap just under 1 so a car never visually reaches the
+            // node before the sim tick that actually delivers it there.
+            progress = std::clamp(base + extra, 0.f, 0.98f);
+        }
+        snap.vehicles.push_back({ v.id, v.currentRoad, progress });
+    }
+
+    // Signals
+    for (const auto& kv : sim.signals) {
+        snap.signals.push_back({ kv.first, kv.second.currentGreenRoad });
+    }
 
     return snap;
 }
 
 int main() {
+    Simulator sim;
+    sim.initialize(300); // step budget; auto-loops via stepOnce() when reached
+
     Renderer renderer(1280, 720, "Traffic Flow Simulation");
 
-    int step = 0;
     sf::Clock stepClock;
-    const float secondsPerStep = 0.5f;
+    const float secondsPerStep = 0.6f; // wall-clock seconds per sim tick at 1x speed
 
     while (renderer.isOpen()) {
         renderer.pollEvents();
 
-        if (!renderer.isPaused() &&
-            stepClock.getElapsedTime().asSeconds() >= secondsPerStep / renderer.getSpeedMultiplier()) {
-            step++;
-            if (step > 200) step = 0; // loop the demo
+        const float interval = secondsPerStep / renderer.getSpeedMultiplier();
+        float elapsed = stepClock.getElapsedTime().asSeconds();
+
+        if (!renderer.isPaused() && elapsed >= interval) {
+            sim.stepOnce();
             stepClock.restart();
+            elapsed = 0.f;
         }
 
-        SimSnapshot snap = buildFakeSnapshot(step);
+        float stepFraction = renderer.isPaused()
+            ? 0.f
+            : std::clamp(elapsed / interval, 0.f, 1.f);
+
+        SimSnapshot snap = buildSnapshot(sim, stepFraction);
         renderer.render(snap);
     }
 

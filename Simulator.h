@@ -467,4 +467,80 @@ public:
 
         printFinalReport();
     }
+
+    // ------------------------------------------------------------
+    // GUI / live-rendering support.
+    // run() above is a blocking, all-at-once console loop. A renderer
+    // needs to draw a frame between simulation ticks (and interpolate
+    // vehicle motion between them), so it needs to call ONE step at a
+    // time on its own clock instead. initialize()/stepOnce()/reset()
+    // below give it that, without changing run()'s existing behavior.
+    // ------------------------------------------------------------
+
+    // One-time setup: builds the graph, wires signals, schedules
+    // events, and resets counters/logs. Call this once before the
+    // first stepOnce().
+    void initialize(int steps = 50) {
+        totalSteps = steps;
+        currentStep = 0;
+        nextVehicleId = 1;
+        peakMode = false;
+        totalCompleted = 0;
+        totalGenerated = 0;
+        mostCongestedRoadTracked = 0;
+        maxCongTracked = -1.0;
+        mostBusyNodeTracked = 0;
+        maxFlowTracked = -1;
+        vehicles.clear();
+        signals.clear();
+        events.clear();
+        completedTravelTimes.clear();
+        completedFreeTimes.clear();
+        stepAvgCongestion.clear();
+        graph = Graph();
+
+        FileManager::clearLogFile("traffic_log.txt");
+        FileManager::clearLogFile("roads.txt");
+        Utility::printHeader("TRAFFIC FLOW OPTIMIZATION SIMULATION");
+
+        buildCityGraph();
+        setupSignals();
+        scheduleEvents();
+    }
+
+    bool isFinished() const { return currentStep >= totalSteps; }
+
+    // Restart from scratch with the same step budget. Handy for a
+    // GUI that just wants the demo to loop forever.
+    void reset() {
+        int steps = totalSteps;
+        initialize(steps);
+    }
+
+    // Advances the simulation by exactly one time step. Safe to call
+    // once per "tick" from a real-time GUI loop (e.g. every 0.5s of
+    // wall-clock time), independent of how often you render a frame.
+    // When the configured step budget is exhausted, prints the final
+    // report and loops back to a fresh run automatically so a live
+    // visualization never just freezes.
+    void stepOnce() {
+        if (isFinished()) {
+            printFinalReport();
+            reset();
+            return;
+        }
+
+        currentStep++;
+        Utility::printStepHeader(currentStep);
+        processEvents();
+        generateVehicles();
+
+        map<int, int> departures = moveVehicles();
+        updateRoadStates(departures);
+        updateSignals();
+        releaseFromQueues();
+        rerouteWaitingVehicles();
+        dispatchWaitingVehicles();
+        recordAndPrintMetrics();
+    }
 };

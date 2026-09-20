@@ -13,25 +13,41 @@ Renderer::Renderer(unsigned int width, unsigned int height, const std::string& t
     fontLoaded(false),
     paused(false),
     speedMultiplier(1.0f) {
-    window.setFramerateLimit(60);
+    // setFramerateLimit + vsync fight each other and can cause visible
+    // stutter; pick vsync (matches the monitor's own refresh) and skip
+    // the manual frame cap.
+    window.setVerticalSyncEnabled(true);
     fontLoaded = loadBestAvailableFont();
     if (!fontLoaded) {
         std::cerr << "[Renderer] WARNING: could not load a .ttf font from any known path.\n"
-            "[Renderer] Text will not be visible. Place a font at ./assets/DejaVuSans.ttf\n"
-            "[Renderer] (or edit loadBestAvailableFont() in Renderer.cpp) to fix this.\n";
+            "[Renderer] All text will be skipped this run (shapes still draw normally).\n"
+            "[Renderer] Fix: drop any .ttf file at ./assets/DejaVuSans.ttf next to the exe.\n";
     }
     generateBackgroundDecor();
 }
 
 bool Renderer::loadBestAvailableFont() {
+    // Project-local fonts first (portable across machines if you ship
+    // one), then the common install locations on each OS. Checked with
+    // a wide net so this doesn't silently fail on machines that only
+    // have some of these installed.
     const std::vector<std::string> candidates = {
         "assets/DejaVuSans.ttf",
+        "assets/Arial.ttf",
         "DejaVuSans.ttf",
+        // Windows
+        "C:/Windows/Fonts/segoeui.ttf",
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/calibri.ttf",
+        "C:/Windows/Fonts/tahoma.ttf",
+        "C:/Windows/Fonts/verdana.ttf",
+        // Linux
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/segoeui.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf"
+        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        // macOS
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
     };
     for (const auto& path : candidates) {
         if (font.openFromFile(path)) return true;
