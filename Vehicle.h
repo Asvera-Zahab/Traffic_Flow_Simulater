@@ -26,8 +26,10 @@ public:
     vector<int> path;            // Planned route (sequence of node IDs)
     int pathIndex;               // Current position in path
     int status;                  // WAITING, MOVING, or ARRIVED
+    bool clearedStopLine;        // true if the car had already crossed the stop line on GREEN
+    // when the light flipped red -- it is allowed to clear the junction
 
-    // Metrics tracking
+// Metrics tracking
     int stepEntered;             // Simulation step when vehicle was created
     int stepArrived;             // Simulation step when vehicle reached destination
     double totalDelay;           // Extra time beyond free-flow travel time
@@ -36,14 +38,14 @@ public:
     Vehicle() {
         id = -1; source = -1; destination = -1; currentNode = -1; currentRoad = -1; lastRoadId = -1;
         remainingTravelTime = 0.0; entryTravelTime = 0.0;
-        pathIndex = 0; status = WAITING;
+        pathIndex = 0; status = WAITING; clearedStopLine = false;
         stepEntered = 0; stepArrived = -1; totalDelay = 0.0;
     }
 
     Vehicle(int vid, int src, int dst, int step) {
         id = vid; source = src; destination = dst; currentNode = src; currentRoad = -1; lastRoadId = -1;
         remainingTravelTime = 0.0; entryTravelTime = 0.0;
-        pathIndex = 0; status = WAITING; stepEntered = step; stepArrived = -1; totalDelay = 0.0;
+        pathIndex = 0; status = WAITING; clearedStopLine = false; stepEntered = step; stepArrived = -1; totalDelay = 0.0;
     }
 
     // Section 4.6: Vehicle Model Update remaining travel time
@@ -66,6 +68,7 @@ public:
         lastRoadId = roadId;
         remainingTravelTime = travelTime;
         entryTravelTime = travelTime;
+        clearedStopLine = false;
         status = MOVING;
     }
 

@@ -20,6 +20,15 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <vector>
+
+// Set true to print per-step dot counts to the console while debugging.
+static const bool kDebugSnapshot = false;
+
+// A car that reaches its destination rests at the end of its last road for
+// this many sim steps (fading out during the last one) instead of popping
+// out of existence the instant it arrives.
+static const int kArrivedLingerSteps = 2;
 
 // Screen layout for the 5-node demo city graph built by
 // Simulator::buildCityGraph(). If you change that graph's nodes,
@@ -35,19 +44,137 @@ static const std::map<int, sf::Vector2f> kNodeLayout = {
     { 4, { 1060.f, 430.f } }, // Kashmir
 };
 
+// Keeps first-come-first-served order of the cars parked on each road so a
+// queue never reshuffles itself between frames: cars that are still parked keep
+// their place, cars that left drop out (everyone behind moves up), and new
+// arrivals join the back of the line.
+static void reconcileOrder(std::map<int, std::vector<int>>& order,
+    const std::map<int, std::vector<int>>& present) {
+    for (auto it = order.begin(); it != order.end();) {
+        auto pr = present.find(it->first);
+        std::vector<int>& ids = it->second;
+        ids.erase(std::remove_if(ids.begin(), ids.end(), [&](int id) {
+            if (pr == present.end()) return true;
+            return std::find(pr->second.begin(), pr->second.end(), id) == pr->second.end();
+            }), ids.end());
+        if (ids.empty()) it = order.erase(it);
+        else ++it;
+    }
+    for (const auto& kv : present) {
+        std::vector<int>& ids = order[kv.first];
+        for (int id : kv.second)
+            if (std::find(ids.begin(), ids.end(), id) == ids.end()) ids.push_back(id);
+    }
+}
+
+static int slotIn(const std::map<int, std::vector<int>>& order, int roadId, int vehicleId) {
+    auto it = order.find(roadId);
+    if (it == order.end()) return 0;
+    auto pos = std::find(it->second.begin(), it->second.end(), vehicleId);
+    return pos == it->second.end() ? 0 : (int)(pos - it->second.begin());
+}
+
+// The road a not-yet-started car should be drawn on: the first road of its route.
+static int roadForUnstartedVehicle(const Simulator& sim, const Vehicle& v) {
+    int next = v.getNextNode();
+    if (next >= 0) {
+        int rid = sim.graph.findRoadIndex(v.currentNode, next);
+        if (rid >= 0) return rid;
+    }
+    auto it = sim.graph.nodes.find(v.currentNode);   // fallback: any road leaving this node
+    if (it != sim.graph.nodes.end() && !it->second.outgoingRoads.empty())
+        return it->second.outgoingRoads.front();
+    return -1;
+}
+
 // Builds a SimSnapshot from the simulator's live state.
 // stepFraction (0..1) is how far we are into the CURRENT sim tick,
 // used purely to interpolate vehicle dots forward visually; it never
 // touches actual simulation state.
+//
+// DRAW CONTRACT -- every car that is still in the network gets exactly one dot,
+// always on a road, never hidden:
+//   MOVING, light green (or already past the stop line) -> glides along its road   (Moving)
+//   MOVING, light RED, still before the stop line        -> glides up to the line,
+//                                                           stops behind any cars already there (ApproachRed)
+//   MOVING, light RED, sitting on the stop line          -> parked                  (StoppedAtLine)
+//   WAITING in a junction queue (lastRoadId >= 0)         -> parked on the line     (StoppedAtLine)
+//   WAITING at its source, not yet on a road              -> parked at road start   (WaitingAtStart)
+//   just ARRIVED                                          -> rests at road end, fading out (Exiting)
+// A dot in a "moving" mode is therefore never drawn moving through a red light.
 SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
     SimSnapshot snap;
     snap.step = sim.currentStep;
+    snap.stopLineProgress = static_cast<float>(STOP_LINE_PROGRESS);
+    const float stopP = snap.stopLineProgress;
+
+    // ---- Vehicles (pass 1: decide each dot's mode and road) ----
+    std::vector<VehicleView> dots;
+    std::map<int, std::vector<int>> parkedIds;  // roadId -> ids parked on its stop line this frame
+    std::map<int, std::vector<int>> startIds;   // roadId -> ids waiting at its start this frame
+    const int roadCount = (int)sim.graph.roads.size();
+
+    for (const Vehicle& v : sim.vehicles) {
+        if (v.status == MOVING) {
+            if (v.currentRoad < 0 || v.currentRoad >= roadCount) continue;
+
+            double entry = v.entryTravelTime;
+            float base = entry > 0.0 ? 1.f - static_cast<float>(v.remainingTravelTime / entry) : 0.f;
+            float extra = entry > 0.0 ? stepFraction / static_cast<float>(entry) : 0.f;
+            float progress = std::clamp(base + extra, 0.f, 1.f);
+
+            bool beforeLine = v.remainingTravelTime >= sim.stopLineRemaining(v) - STOP_LINE_EPS;
+            if (sim.isRed(v.currentRoad) && beforeLine) {
+                if (sim.isHeldAtLine(v)) {
+                    dots.push_back({ v.id, v.currentRoad, stopP, DotMode::StoppedAtLine, 0, 1.f });
+                    parkedIds[v.currentRoad].push_back(v.id);
+                }
+                else {
+                    dots.push_back({ v.id, v.currentRoad, std::min(progress, stopP), DotMode::ApproachRed, 0, 1.f });
+                }
+            }
+            else {
+                dots.push_back({ v.id, v.currentRoad, progress, DotMode::Moving, 0, 1.f });
+            }
+        }
+        else if (v.status == WAITING && v.currentNode != v.destination) {
+            if (v.lastRoadId >= 0) {
+                // queued at a junction: waits on the stop line of the road it arrived on
+                dots.push_back({ v.id, v.lastRoadId, stopP, DotMode::StoppedAtLine, 0, 1.f });
+                parkedIds[v.lastRoadId].push_back(v.id);
+            }
+            else {
+                // spawned but could not enter its first road yet: wait at the start of it
+                int rid = roadForUnstartedVehicle(sim, v);
+                if (rid < 0) continue;
+                dots.push_back({ v.id, rid, 0.f, DotMode::WaitingAtStart, 0, 1.f });
+                startIds[rid].push_back(v.id);
+            }
+        }
+        else if (v.status == ARRIVED && v.lastRoadId >= 0) {
+            int age = sim.currentStep - v.stepArrived;
+            if (age >= 0 && age < kArrivedLingerSteps) {
+                float alpha = (age < kArrivedLingerSteps - 1) ? 1.f : 1.f - stepFraction;
+                dots.push_back({ v.id, v.lastRoadId, 1.f, DotMode::Exiting, 0, alpha });
+            }
+        }
+    }
+
+    // ---- Vehicles (pass 2: stable queue positions) ----
+    static std::map<int, std::vector<int>> parkedOrder, startOrder;
+    reconcileOrder(parkedOrder, parkedIds);
+    reconcileOrder(startOrder, startIds);
 
     int moving = 0, waiting = 0;
-    for (const Vehicle& v : sim.vehicles) {
-        if (v.status == MOVING) moving++;
-        else if (v.status == WAITING && v.currentNode != v.destination) waiting++;
+    for (VehicleView& d : dots) {
+        if (d.mode == DotMode::StoppedAtLine) { d.slot = slotIn(parkedOrder, d.roadId, d.id); waiting++; }
+        else if (d.mode == DotMode::WaitingAtStart) { d.slot = slotIn(startOrder, d.roadId, d.id); waiting++; }
+        else if (d.mode != DotMode::Exiting) moving++;
+        snap.vehicles.push_back(d);
     }
+
+    // Stats now describe exactly what is on screen: "Moving" = dots that are
+    // travelling, "Waiting" = dots that are standing still.
     snap.movingCount = moving;
     snap.waitingCount = waiting;
     snap.arrivedCount = sim.totalCompleted;
@@ -68,7 +195,7 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
         snap.nodes.push_back({ n.id, n.name, pos.x, pos.y });
     }
 
-    // Roads
+    // Roads (Q = cars standing on that road's stop line)
     for (const Road& r : sim.graph.roads) {
         RoadView rv;
         rv.id = r.id;
@@ -76,70 +203,20 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
         rv.dstNode = r.destination;
         rv.flow = r.currentFlow;
         rv.capacity = r.capacity;
-        rv.queueLen = r.queueCount;
+        auto pk = parkedIds.find(r.id);
+        rv.queueLen = pk == parkedIds.end() ? 0 : (int)pk->second.size();
         rv.congestion = static_cast<float>(r.congestion);
         rv.blocked = (r.capacity == 0);
         snap.roads.push_back(rv);
     }
 
-    // Vehicles.
-    //
-    // MOVING vehicles get an interpolated position along their current
-    // road, as before.
-    //
-    // WAITING vehicles that have already traveled at least one road (i.e.
-    // they reached an intersection and are now queued behind a red
-    // signal) are ALSO drawn now -- parked near the end of the road they
-    // just arrived on -- instead of being skipped. We use Vehicle::lastRoadId
-    // directly (set in enterRoad()/arriveAtNode()) rather than inferring it
-    // from path[pathIndex-1]: a reroute resets pathIndex to 0, which would
-    // silently break that inference and make the vehicle vanish again the
-    // moment it got rerouted while still queued. lastRoadId survives reroutes.
-    // Multiple vehicles queued on the same road are staggered backwards so
-    // the queue reads as a visible line of stopped cars, not overlapping dots.
-    //
-    // A vehicle still sitting at its original source (never entered the
-    // network yet, lastRoadId == -1) has no road to sit on, so it still
-    // isn't drawn -- matching the original contract.
-    std::map<int, int> queuedOnRoad;
-    int debugQueuedCount = 0;
-    for (const Vehicle& v : sim.vehicles) {
-        if (v.status == MOVING) {
-            float progress = 0.f;
-            if (v.entryTravelTime > 0.0) {
-                float base = 1.f - static_cast<float>(v.remainingTravelTime / v.entryTravelTime);
-                float extra = stepFraction / static_cast<float>(v.entryTravelTime);
-                // Cap just under 1 so a car never visually reaches the
-                // node before the sim tick that actually delivers it there.
-                progress = std::clamp(base + extra, 0.f, 0.98f);
-            }
-            snap.vehicles.push_back({ v.id, v.currentRoad, progress });
+    if (kDebugSnapshot) {
+        static int lastPrintedStep = -1;
+        if (sim.currentStep != lastPrintedStep) {
+            lastPrintedStep = sim.currentStep;
+            std::cout << "[SNAPSHOT DEBUG] step=" << sim.currentStep
+                << " movingDots=" << moving << " stoppedDots=" << waiting << std::endl;
         }
-        else if (v.status == WAITING && v.currentNode != v.destination && v.lastRoadId >= 0) {
-            int stackPos = queuedOnRoad[v.lastRoadId]++;
-            // Kept safely BEHIND the Renderer's signal stop-line box
-            // (which sits ~44px before the junction ring) across this
-            // demo's road lengths (~250-500px), so a queued car reads as
-            // "waiting behind the light," not "already past it."
-            float progress = std::max(0.45f, 0.80f - 0.05f * (float)stackPos);
-            snap.vehicles.push_back({ v.id, v.lastRoadId, progress });
-            debugQueuedCount++;
-        }
-    }
-
-    // DEBUG: prints only when the step actually advances (not every
-    // render frame), so you can see -- independent of the picture on
-    // screen -- whether stopped vehicles are being sent to the renderer
-    // at all. If this never prints a number > 0 during a period where the
-    // console's [SIGNAL DEBUG] shows a RED signal with queue > 0, the bug
-    // is in this function. If it DOES print > 0 but you still see a dot
-    // sail through, the bug is in Renderer::drawVehicles/drawSignals.
-    static int lastPrintedStep = -1;
-    if (sim.currentStep != lastPrintedStep) {
-        lastPrintedStep = sim.currentStep;
-        std::cout << "[SNAPSHOT DEBUG] step=" << sim.currentStep
-            << " movingDots=" << moving
-            << " stoppedDots=" << debugQueuedCount << std::endl;
     }
 
     // Signals
@@ -152,7 +229,7 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
 
 int main() {
     std::cout << "\n############################################\n"
-        << "  MAIN.CPP BUILD MARKER: stopbox-v1\n"
+        << "  MAIN.CPP BUILD MARKER: stopline-v1\n"
         << "  If you do not see this line, your project\n"
         << "  is NOT using this main.cpp.\n"
         << "############################################\n" << std::endl;

@@ -6,6 +6,13 @@ using namespace std;
 
 const int GREEN_DURATION = 5;
 
+// Where the stop line sits along a road, as a fraction of the trip (0 = start
+// of the road, 1 = the junction). Shared by the simulation (cars may not cross
+// this point while their light is RED) and by the renderer (the dot is drawn
+// waiting exactly here).
+const double STOP_LINE_PROGRESS = 0.80;
+const double STOP_LINE_EPS = 1e-6;
+
 class TrafficSignal {
 public:
     int nodeId;

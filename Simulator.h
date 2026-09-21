@@ -3,6 +3,8 @@
 #include <vector>
 #include <map>
 #include <cstdlib>
+#include <cmath>
+#include <algorithm>
 #include "Graph.h"
 #include "Vehicle.h"
 #include "TrafficSignal.h"
@@ -123,7 +125,7 @@ public:
     // Call ONCE before the render loop starts.
     void initialize(int steps = 300) {
         cout << "\n############################################\n"
-            << "  SIMULATOR BUILD MARKER: signal-fix-v4\n"
+            << "  SIMULATOR BUILD MARKER: stopline-v1\n"
             << "  If you do not see this exact line in your\n"
             << "  console output, your project is NOT using\n"
             << "  this Simulator.h -- stop and fix that first.\n"
@@ -186,8 +188,12 @@ public:
 
         map<int, int> departures = moveVehicles();
         updateRoadStates(departures);
-        updateSignals();
+        // ORDER MATTERS: cars are moved AND released using the signal state
+        // that was on screen during the step that just finished. Only then do
+        // the lights advance to their next state. This is what guarantees a
+        // car is never let through a light that was red while it was driving up to it.
         releaseFromQueues();
+        updateSignals();
         rerouteWaitingVehicles();
         dispatchWaitingVehicles();
         recordAndPrintMetrics();
@@ -224,9 +230,17 @@ public:
         if (peakMode) { spawnCount = 5; threshold = 60; }
         else { spawnCount = 3; threshold = 50; }
 
+        // Cap on cars IN THE NETWORK at once (not a lifetime total). The old
+        // "stop after 100 generated" cap was hit around step ~90, after which
+        // no new cars appeared and the map sat empty until the step-300 reset.
+        static const int MAX_ACTIVE_VEHICLES = 60;
+        int active = 0;
+        for (const Vehicle& v : vehicles)
+            if (v.status != ARRIVED) active++;
+
         for (int i = 0; i < spawnCount; i++) {
             if (Utility::randomInt(1, 150) > threshold) continue;
-            if (totalGenerated >= 100) break;
+            if (active >= MAX_ACTIVE_VEHICLES) break;
 
             int src = sources[Utility::randomInt(0, (int)sources.size() - 1)];
             int dst = dests[Utility::randomInt(0, (int)dests.size() - 1)];
@@ -242,10 +256,35 @@ public:
             v.status = WAITING;
             vehicles.push_back(v);
             totalGenerated++;
+            active++;
         }
     }
 
+    // ---- stop-line helpers ----
+
+    // True if the signal that guards the END of this road is RED right now.
+    bool isRed(int roadId) const {
+        if (roadId < 0 || roadId >= (int)graph.roads.size()) return false;
+        auto it = signals.find(graph.roads[roadId].destination);
+        if (it == signals.end()) return false;   // no signal -> never red
+        return it->second.getSignal(roadId) == 0;
+    }
+
+    // remainingTravelTime a vehicle has left when it is exactly ON the stop line.
+    double stopLineRemaining(const Vehicle& v) const {
+        return (1.0 - STOP_LINE_PROGRESS) * v.entryTravelTime;
+    }
+
+    // A MOVING vehicle that is sitting on the stop line of a red road.
+    bool isHeldAtLine(const Vehicle& v) const {
+        if (v.status != MOVING || !isRed(v.currentRoad)) return false;
+        return std::fabs(v.remainingTravelTime - stopLineRemaining(v)) <= STOP_LINE_EPS;
+    }
+
     // Section 4.6: rv(t+1) = rv(t) - 1
+    // STOP LINE: while the light at the end of a road is RED, a vehicle may drive
+    // up to the stop line but NOT past it (its remaining time is frozen there).
+    // The moment the light is green it continues as normal.
     // FIX (kept from earlier review): a vehicle that finishes a road but
     // has NOT reached its final destination joins the queue Q_ij on the
     // road it just left (queueCount++), so releaseFromQueues()/signals can
@@ -256,37 +295,50 @@ public:
         map<int, int> roadDepartures;
 
         for (Vehicle& v : vehicles) {
-            if (v.status == ARRIVED) continue;
-            if (v.status == MOVING) {
-                bool finished = v.update();
-                if (finished) {
-                    int rid = v.currentRoad;
-                    roadDepartures[rid]++;
+            if (v.status != MOVING) continue;
 
-                    int destNode = graph.roads[rid].destination;
+            int rid = v.currentRoad;
+            bool red = isRed(rid);
 
-                    if (destNode != v.destination) {
-                        graph.roads[rid].queueCount++;
-                    }
-
-                    v.arriveAtNode(destNode, rid);
-
-                    if (destNode == v.destination) {
-                        v.markArrived(currentStep);
-                        totalCompleted++;
-
-                        int tt = v.getTravelTime();
-                        completedTravelTimes.push_back(tt);
-
-                        double freeTime = 0.0;
-                        for (int i = 0; i + 1 < (int)v.path.size(); i++) {
-                            int roadId = graph.findRoadIndex(v.path[i], v.path[i + 1]);
-                            if (roadId >= 0)
-                                freeTime += graph.roads[roadId].travelTime;
-                        }
-                        completedFreeTimes.push_back(freeTime);
-                    }
+            // RED light: drive up to the stop line, never through it.
+            if (red) {
+                double stopRem = stopLineRemaining(v);
+                if (v.remainingTravelTime >= stopRem - STOP_LINE_EPS) {
+                    v.remainingTravelTime = max(stopRem, v.remainingTravelTime - 1.0);
+                    continue;
                 }
+                // else: the car had already crossed the line while it was
+                // still green -- it is allowed to finish crossing the junction.
+            }
+
+            bool finished = v.update();
+            if (!finished) continue;
+
+            roadDepartures[rid]++;
+
+            int destNode = graph.roads[rid].destination;
+
+            if (destNode != v.destination) {
+                graph.roads[rid].queueCount++;
+            }
+
+            v.arriveAtNode(destNode, rid);
+            v.clearedStopLine = red;   // crossed on green, light flipped since -> may still clear
+
+            if (destNode == v.destination) {
+                v.markArrived(currentStep);
+                totalCompleted++;
+
+                int tt = v.getTravelTime();
+                completedTravelTimes.push_back(tt);
+
+                double freeTime = 0.0;
+                for (int i = 0; i + 1 < (int)v.path.size(); i++) {
+                    int roadId = graph.findRoadIndex(v.path[i], v.path[i + 1]);
+                    if (roadId >= 0)
+                        freeTime += graph.roads[roadId].travelTime;
+                }
+                completedFreeTimes.push_back(freeTime);
             }
         }
         return roadDepartures;
@@ -296,6 +348,10 @@ public:
         map<int, int> roadQueues;
         for (Road& r : graph.roads)
             roadQueues[r.id] = r.queueCount;
+        // cars parked on the stop line of a red road are waiting too, so they
+        // count toward that road's queue when deciding who gets the next green
+        for (const Vehicle& v : vehicles)
+            if (isHeldAtLine(v)) roadQueues[v.currentRoad]++;
         for (auto& kv : signals)
             kv.second.update(roadQueues);
     }
@@ -307,16 +363,15 @@ public:
     //
     // DEBUG_SIGNALS: prints ground-truth signal/queue state every step,
     // independent of any rendering. Set to false once verified.
-    static const bool DEBUG_SIGNALS = true;
+    static const bool DEBUG_SIGNALS = false;
 
     void releaseFromQueues() {
         for (Road& r : graph.roads) {
             if (r.queueCount <= 0) continue;
 
             int destNode = r.destination;
-            int sig = 1;
-            if (signals.count(destNode))
-                sig = signals[destNode].getSignal(r.id);
+            bool red = isRed(r.id);
+            int sig = red ? 0 : 1;
 
             if (DEBUG_SIGNALS) {
                 cout << "[SIGNAL DEBUG] step=" << currentStep
@@ -325,7 +380,8 @@ public:
                     << " signal=" << (sig ? "GREEN" : "RED") << endl;
             }
 
-            if (sig == 0) continue; // RED: nothing leaves this road's queue this step
+            // RED: nothing leaves this road's queue, except cars that had already
+            // crossed the stop line on green (clearedStopLine) -- see below.
 
             int released = 0;
             int maxRelease = (int)r.dischargeRate;
@@ -336,6 +392,7 @@ public:
                 if (v.currentNode != destNode) continue;
                 if (v.lastRoadId != r.id) continue; // THE FIX: only release vehicles that actually arrived via THIS road -- without this, a road with a GREEN signal could steal and release a vehicle that arrived via a DIFFERENT road at the same junction whose signal is RED
                 if (v.pathIndex == 0 && v.currentNode == v.source) continue; // handled by dispatchWaitingVehicles instead
+                if (red && !v.clearedStopLine) continue; // red light: this car waits
                 if (!v.hasPath()) continue;
 
                 int nextNode = v.getNextNode();

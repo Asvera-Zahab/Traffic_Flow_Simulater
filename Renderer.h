@@ -41,10 +41,22 @@ struct RoadView {
     bool blocked;
 };
 
+// How a vehicle dot should be placed on its road.
+enum class DotMode {
+    Moving,          // driving freely: placed from `progress`
+    ApproachRed,     // driving up to a RED light: never drawn past the stop line / the queue in front of it
+    StoppedAtLine,   // parked on the stop line (or in the line of cars behind it), `slot` = place in the line, 0 = front
+    WaitingAtStart,  // spawned but not yet on the road: parked at the start of it, `slot` = place in line
+    Exiting          // just reached its destination: rests at the end of the road while fading out
+};
+
 struct VehicleView {
     int id;
     int roadId;
-    float progress; // 0 = at srcNode, 1 = at dstNode
+    float progress;                 // 0 = start of the road, 1 = the junction (STOP line is at snap.stopLineProgress)
+    DotMode mode = DotMode::Moving;
+    int slot = 0;
+    float alpha = 1.f;              // 1 = solid, 0 = invisible
 };
 
 struct SignalView {
@@ -56,6 +68,7 @@ struct SimSnapshot {
     int step;
     int movingCount, waitingCount, arrivedCount, generatedCount;
     float avgCongestion; // expected range 0..1
+    float stopLineProgress = 0.80f; // where the stop line sits along every road (0..1); must match the simulator
     std::vector<NodeView> nodes;
     std::vector<RoadView> roads;
     std::vector<VehicleView> vehicles;
@@ -90,21 +103,33 @@ private:
     static constexpr float RING_RADIUS = 26.f;          // fixed -- the name lives in a separate pill, not inside the ring
     static constexpr float RING_THICKNESS = 4.5f;
     static constexpr float ROAD_THICKNESS = 5.f;
+    static constexpr float ROAD_WIDTH = 14.f;           // asphalt width (the coloured edge adds 2px each side)
     static constexpr float VEHICLE_RADIUS = 4.5f;
     static constexpr float SIGNAL_DOT_RADIUS = 7.f;      // (kept for sizing reference)
-    static constexpr float SIGNAL_BOX_W = 24.f, SIGNAL_BOX_H = 14.f; // small box laid across the lane, like a stop line
+    static constexpr float SIGNAL_BOX_W = 24.f, SIGNAL_BOX_H = 18.f; // signal box laid across the lane, like a stop line (W must stay 24: the stop-line maths uses it)
     static constexpr float STUB_LENGTH = 80.f;
     static constexpr float BOTTOM_BAR_HEIGHT = 26.f;
 
-    sf::Vector2f toScreen(sf::Vector2f p) const { return p; }
-    sf::Vector2f toScreen(float x, float y) const { return { x, y }; }
+    // The demo graph is laid out in "layout units" (main.cpp's kNodeLayout).
+    // Every frame updateLayout() works out a uniform scale + offset that fits
+    // the junctions into the CURRENT window size and centres them, and
+    // toScreen() applies it. Only the distances BETWEEN junctions scale --
+    // text, rings, signals and cars keep their crisp pixel size.
+    float layoutScale = 1.f;
+    sf::Vector2f layoutOffset{ 0.f, 0.f };
+
+    sf::Vector2f toScreen(sf::Vector2f p) const { return { p.x * layoutScale + layoutOffset.x, p.y * layoutScale + layoutOffset.y }; }
+    sf::Vector2f toScreen(float x, float y) const { return { x * layoutScale + layoutOffset.x, y * layoutScale + layoutOffset.y }; }
+    void updateLayout(const SimSnapshot& snap);
 
     bool loadBestAvailableFont();
     sf::Text makeText(const std::string& str, unsigned int size, sf::Color color) const;
 
     sf::Color congestionColor(float congestion, bool blocked) const;
     sf::Color nodeColor(const std::string& name, int id) const;
-    sf::RectangleShape roundedLabelBox(sf::Vector2f center, sf::Vector2f size, sf::Color fill) const;
+    sf::ConvexShape roundedLabelBox(sf::Vector2f center, sf::Vector2f size, sf::Color fill, float radius = 8.f) const;
+    void drawPanel(sf::Vector2f topLeft, sf::Vector2f size, float radius = 10.f);
+    void drawRoadStrip(sf::Vector2f a, sf::Vector2f b, sf::Color edge, bool blocked, float width);
 
     void drawBackground();
     void drawLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
