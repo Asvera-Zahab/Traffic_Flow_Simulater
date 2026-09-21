@@ -25,10 +25,10 @@
 // Set true to print per-step dot counts to the console while debugging.
 static const bool kDebugSnapshot = false;
 
-// A car that reaches its destination rests at the end of its last road for
-// this many sim steps (fading out during the last one) instead of popping
-// out of existence the instant it arrives.
-static const int kArrivedLingerSteps = 2;
+// A car that reaches its destination keeps driving INTO its junction for this
+// many sim steps (shrinking and fading as it goes) instead of stopping at the
+// signal and popping out of existence.
+static const int kArrivedLingerSteps = 1;
 
 // Screen layout for the 5-node demo city graph built by
 // Simulator::buildCityGraph(). If you change that graph's nodes,
@@ -100,7 +100,7 @@ static int roadForUnstartedVehicle(const Simulator& sim, const Vehicle& v) {
 //   MOVING, light RED, sitting on the stop line          -> parked                  (StoppedAtLine)
 //   WAITING in a junction queue (lastRoadId >= 0)         -> parked on the line     (StoppedAtLine)
 //   WAITING at its source, not yet on a road              -> parked at road start   (WaitingAtStart)
-//   just ARRIVED                                          -> rests at road end, fading out (Exiting)
+//   just ARRIVED                                          -> drives into the junction and fades out (Exiting)
 // A dot in a "moving" mode is therefore never drawn moving through a red light.
 SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
     SimSnapshot snap;
@@ -154,8 +154,8 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
         else if (v.status == ARRIVED && v.lastRoadId >= 0) {
             int age = sim.currentStep - v.stepArrived;
             if (age >= 0 && age < kArrivedLingerSteps) {
-                float alpha = (age < kArrivedLingerSteps - 1) ? 1.f : 1.f - stepFraction;
-                dots.push_back({ v.id, v.lastRoadId, 1.f, DotMode::Exiting, 0, alpha });
+                // progress = how far into the junction it has driven this step (0..1)
+                dots.push_back({ v.id, v.lastRoadId, stepFraction, DotMode::Exiting, 0, 1.f });
             }
         }
     }

@@ -639,16 +639,28 @@ void Renderer::drawVehicles(const SimSnapshot& snap,
             dist = startD + v.slot * spacing;
             break;
         case DotMode::Exiting:
-            dist = endD;
-            break;
+            break;   // handled below
         }
-        dist = std::clamp(dist, startD, endD);
+
+        float radius = VEHICLE_RADIUS;
+        float fade = v.alpha;
+        if (v.mode == DotMode::Exiting) {
+            // Arrived: keep driving from the end of the road straight INTO the
+            // junction (to its centre), shrinking and fading out on the way.
+            float t = std::clamp(v.progress, 0.f, 1.f);
+            dist = endD + (len - endD) * t;
+            radius = VEHICLE_RADIUS * (1.f - 0.45f * t);
+            fade *= std::clamp((1.f - t) / 0.45f, 0.f, 1.f);   // solid for the first ~55%, then fades
+        }
+        else {
+            dist = std::clamp(dist, startD, endD);
+        }
 
         sf::Vector2f pos = a + u * dist;
-        const std::uint8_t alpha = static_cast<std::uint8_t>(std::clamp(v.alpha, 0.f, 1.f) * 255.f);
+        const std::uint8_t alpha = static_cast<std::uint8_t>(std::clamp(fade, 0.f, 1.f) * 255.f);
 
-        sf::CircleShape dot(VEHICLE_RADIUS);
-        dot.setOrigin({ VEHICLE_RADIUS, VEHICLE_RADIUS });
+        sf::CircleShape dot(radius);
+        dot.setOrigin({ radius, radius });
         dot.setPosition(pos);
         dot.setFillColor(sf::Color(10, 10, 10, alpha));
         dot.setOutlineThickness(1.f);
@@ -833,8 +845,8 @@ void Renderer::render(const SimSnapshot& snapshot) {
     drawExternalStubs(snapshot, nodeById);
     drawRoads(snapshot, nodeById);
     drawSignals(snapshot, roadById, nodeById);
-    drawVehicles(snapshot, roadById, nodeById);
     drawJunctionLabels(snapshot);
+    drawVehicles(snapshot, roadById, nodeById);   // after the rings: a car that has arrived is drawn driving INTO its junction
 
     drawTitleBox(snapshot);
     drawStatsBox(snapshot);

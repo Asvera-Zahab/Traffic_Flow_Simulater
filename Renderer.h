@@ -47,7 +47,7 @@ enum class DotMode {
     ApproachRed,     // driving up to a RED light: never drawn past the stop line / the queue in front of it
     StoppedAtLine,   // parked on the stop line (or in the line of cars behind it), `slot` = place in the line, 0 = front
     WaitingAtStart,  // spawned but not yet on the road: parked at the start of it, `slot` = place in line
-    Exiting          // just reached its destination: rests at the end of the road while fading out
+    Exiting          // just reached its destination: `progress` (0..1) = how far it has driven INTO the junction; fades out on the way
 };
 
 struct VehicleView {
