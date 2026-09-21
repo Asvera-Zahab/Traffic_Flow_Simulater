@@ -19,7 +19,7 @@ public:
         :nodeId(-1), currentGreenRoad(-1), greenTimer(0), adaptiveMode(true) {
     }
 
-    TrafficSignal(int nid, const vector<int>& roads, bool adaptive = true):nodeId(nid), incomingRoadIds(roads),
+    TrafficSignal(int nid, const vector<int>& roads, bool adaptive = true) :nodeId(nid), incomingRoadIds(roads),
         currentGreenRoad(-1), greenTimer(0), adaptiveMode(adaptive) {
 
         for (int r : incomingRoadIds) signalState[r] = 0;
@@ -41,6 +41,16 @@ public:
         greenTimer++;
 
         if (adaptiveMode) {
+            // FIX: enforce a minimum green duration before ANY switch is
+            // even considered. Previously the "give green to whichever
+            // road has the highest queue" check ran every single step,
+            // so as soon as another road's queue ticked even 1 higher the
+            // light flipped immediately -- often after just one step,
+            // which is too brief to visibly register as "a car stopped
+            // here." Matches the spec: green for a fixed duration OR
+            // until the queue empties, THEN reconsider.
+            if (greenTimer < GREEN_DURATION) return;
+
             //goal: Give GREEN to the road with highest traffic.
             int bestRoad = currentGreenRoad;
             int maxQueue = -1;
@@ -63,8 +73,11 @@ public:
             if (bestRoad != currentGreenRoad) {
                 setGreen(bestRoad);
             }
-            //If the current green light has stayed on long enough, switch to the next road.
-            else if (greenTimer >= GREEN_DURATION) {
+            else {
+                // Nobody has a bigger queue than the current green road,
+                // but the minimum duration has elapsed -- rotate anyway
+                // so a single always-busiest road can't hold green forever
+                // and starve the others.
                 rotateSignal();
             }
         }

@@ -18,6 +18,7 @@
 #include "Renderer.h"
 #include "Simulator.h"
 #include <algorithm>
+#include <iostream>
 #include <map>
 
 // Screen layout for the 5-node demo city graph built by
@@ -101,6 +102,7 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
     // network yet, lastRoadId == -1) has no road to sit on, so it still
     // isn't drawn -- matching the original contract.
     std::map<int, int> queuedOnRoad;
+    int debugQueuedCount = 0;
     for (const Vehicle& v : sim.vehicles) {
         if (v.status == MOVING) {
             float progress = 0.f;
@@ -121,7 +123,23 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
             // "waiting behind the light," not "already past it."
             float progress = std::max(0.45f, 0.80f - 0.05f * (float)stackPos);
             snap.vehicles.push_back({ v.id, v.lastRoadId, progress });
+            debugQueuedCount++;
         }
+    }
+
+    // DEBUG: prints only when the step actually advances (not every
+    // render frame), so you can see -- independent of the picture on
+    // screen -- whether stopped vehicles are being sent to the renderer
+    // at all. If this never prints a number > 0 during a period where the
+    // console's [SIGNAL DEBUG] shows a RED signal with queue > 0, the bug
+    // is in this function. If it DOES print > 0 but you still see a dot
+    // sail through, the bug is in Renderer::drawVehicles/drawSignals.
+    static int lastPrintedStep = -1;
+    if (sim.currentStep != lastPrintedStep) {
+        lastPrintedStep = sim.currentStep;
+        std::cout << "[SNAPSHOT DEBUG] step=" << sim.currentStep
+            << " movingDots=" << moving
+            << " stoppedDots=" << debugQueuedCount << std::endl;
     }
 
     // Signals
@@ -133,6 +151,12 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
 }
 
 int main() {
+    std::cout << "\n############################################\n"
+        << "  MAIN.CPP BUILD MARKER: stopbox-v1\n"
+        << "  If you do not see this line, your project\n"
+        << "  is NOT using this main.cpp.\n"
+        << "############################################\n" << std::endl;
+
     Simulator sim;
     sim.initialize(300); // step budget; auto-loops via stepOnce() when reached
 

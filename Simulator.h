@@ -122,6 +122,13 @@ public:
 
     // Call ONCE before the render loop starts.
     void initialize(int steps = 300) {
+        cout << "\n############################################\n"
+            << "  SIMULATOR BUILD MARKER: signal-fix-v4\n"
+            << "  If you do not see this exact line in your\n"
+            << "  console output, your project is NOT using\n"
+            << "  this Simulator.h -- stop and fix that first.\n"
+            << "############################################\n" << endl;
+
         totalSteps = steps;
         buildCityGraph();
         setupSignals();
@@ -297,6 +304,11 @@ public:
     // actually queued on THIS road (i.e. arrived via a road, not still at
     // their original source), and only when this road's signal is green.
     // This is the mechanism that makes cars stop at a red light.
+    //
+    // DEBUG_SIGNALS: prints ground-truth signal/queue state every step,
+    // independent of any rendering. Set to false once verified.
+    static const bool DEBUG_SIGNALS = true;
+
     void releaseFromQueues() {
         for (Road& r : graph.roads) {
             if (r.queueCount <= 0) continue;
@@ -305,6 +317,14 @@ public:
             int sig = 1;
             if (signals.count(destNode))
                 sig = signals[destNode].getSignal(r.id);
+
+            if (DEBUG_SIGNALS) {
+                cout << "[SIGNAL DEBUG] step=" << currentStep
+                    << " road=" << r.id << " ->node=" << destNode
+                    << " queue=" << r.queueCount
+                    << " signal=" << (sig ? "GREEN" : "RED") << endl;
+            }
+
             if (sig == 0) continue; // RED: nothing leaves this road's queue this step
 
             int released = 0;
@@ -314,6 +334,7 @@ public:
                 if (released >= maxRelease) break;
                 if (v.status != WAITING) continue;
                 if (v.currentNode != destNode) continue;
+                if (v.lastRoadId != r.id) continue; // THE FIX: only release vehicles that actually arrived via THIS road -- without this, a road with a GREEN signal could steal and release a vehicle that arrived via a DIFFERENT road at the same junction whose signal is RED
                 if (v.pathIndex == 0 && v.currentNode == v.source) continue; // handled by dispatchWaitingVehicles instead
                 if (!v.hasPath()) continue;
 
@@ -331,6 +352,10 @@ public:
                 nextRoad.currentFlow++;
                 v.enterRoad(nextRoadId, nextRoad.travelTime);
                 released++;
+            }
+
+            if (DEBUG_SIGNALS && released > 0) {
+                cout << "[SIGNAL DEBUG]   -> released " << released << " vehicle(s) from road " << r.id << endl;
             }
         }
     }

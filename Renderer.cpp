@@ -12,6 +12,12 @@ Renderer::Renderer(unsigned int width, unsigned int height, const std::string& t
     fontLoaded(false),
     paused(false),
     speedMultiplier(1.0f) {
+    std::cout << "\n############################################\n"
+        << "  RENDERER BUILD MARKER: stopbox-v1\n"
+        << "  If you do not see this line, your project\n"
+        << "  is NOT using this Renderer.cpp.\n"
+        << "############################################\n" << std::endl;
+
     window.setFramerateLimit(60);
     fontLoaded = loadBestAvailableFont();
     if (!fontLoaded) {
