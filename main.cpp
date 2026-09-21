@@ -115,7 +115,11 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
         }
         else if (v.status == WAITING && v.currentNode != v.destination && v.lastRoadId >= 0) {
             int stackPos = queuedOnRoad[v.lastRoadId]++;
-            float progress = std::max(0.55f, 0.95f - 0.06f * (float)stackPos);
+            // Kept safely BEHIND the Renderer's signal stop-line box
+            // (which sits ~44px before the junction ring) across this
+            // demo's road lengths (~250-500px), so a queued car reads as
+            // "waiting behind the light," not "already past it."
+            float progress = std::max(0.45f, 0.80f - 0.05f * (float)stackPos);
             snap.vehicles.push_back({ v.id, v.lastRoadId, progress });
         }
     }

@@ -91,7 +91,8 @@ private:
     static constexpr float RING_THICKNESS = 4.5f;
     static constexpr float ROAD_THICKNESS = 5.f;
     static constexpr float VEHICLE_RADIUS = 4.5f;
-    static constexpr float SIGNAL_DOT_RADIUS = 7.f;      // simple colored dot, not a 3-light housing
+    static constexpr float SIGNAL_DOT_RADIUS = 7.f;      // (kept for sizing reference)
+    static constexpr float SIGNAL_BOX_W = 24.f, SIGNAL_BOX_H = 14.f; // small box laid across the lane, like a stop line
     static constexpr float STUB_LENGTH = 80.f;
     static constexpr float BOTTOM_BAR_HEIGHT = 26.f;
 
@@ -109,7 +110,7 @@ private:
     void drawLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
     void drawDashedLine(sf::Vector2f a, sf::Vector2f b, float thickness, sf::Color color);
     void drawArrowHead(sf::Vector2f tip, sf::Vector2f dir, sf::Color color, float size = 10.f);
-    void drawSignalDot(sf::Vector2f pos, int roadId, bool green, bool blocked);
+    void drawSignalBox(sf::Vector2f pos, float angleDeg, int roadId, bool green, bool blocked);
 
     void drawTitleBox(const SimSnapshot& snap);
     void drawStatsBox(const SimSnapshot& snap);

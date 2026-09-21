@@ -183,24 +183,26 @@ void Renderer::drawArrowHead(sf::Vector2f tip, sf::Vector2f dir, sf::Color color
     window.draw(triangle);
 }
 
-// ---- signal indicator: one small colored dot per incoming road, LABELED
-// with its road id so it's unambiguous which road it belongs to.
+// ---- signal indicator: a small box laid directly ON the road, like a
+// stop line, colored red/green and labeled with its road id so it's
+// unambiguous which road it belongs to.
 // NOTE: TrafficSignal.h only models two states (green=1 / red=0) -- this
-// is a straight red/green dot, no fabricated amber state.
+// is a straight red/green box, no fabricated amber state.
 
-void Renderer::drawSignalDot(sf::Vector2f pos, int roadId, bool green, bool blocked) {
+void Renderer::drawSignalBox(sf::Vector2f pos, float angleDeg, int roadId, bool green, bool blocked) {
     sf::Color fill = blocked ? sf::Color(120, 120, 116) : (green ? sf::Color(60, 190, 100) : sf::Color(214, 60, 60));
 
-    sf::CircleShape dot(SIGNAL_DOT_RADIUS);
-    dot.setOrigin({ SIGNAL_DOT_RADIUS, SIGNAL_DOT_RADIUS });
-    dot.setPosition(pos);
-    dot.setFillColor(fill);
-    dot.setOutlineThickness(2.f);
-    dot.setOutlineColor(sf::Color(15, 15, 15));
-    window.draw(dot);
+    sf::RectangleShape box({ SIGNAL_BOX_W, SIGNAL_BOX_H });
+    box.setOrigin({ SIGNAL_BOX_W / 2.f, SIGNAL_BOX_H / 2.f });
+    box.setPosition(pos);
+    box.setRotation(sf::degrees(angleDeg)); // laid across the lane, following the road's own angle
+    box.setFillColor(fill);
+    box.setOutlineThickness(2.f);
+    box.setOutlineColor(sf::Color(15, 15, 15));
+    window.draw(box);
 
-    // Road id label directly on the dot -- answers "which road is this
-    // signal for" at a glance.
+    // Road id label, kept upright (not rotated) so it stays readable
+    // regardless of the road's angle.
     sf::Text label = makeText("R" + std::to_string(roadId), 10, sf::Color(255, 255, 255));
     sf::FloatRect lb = label.getLocalBounds();
     label.setOrigin({ lb.size.x / 2.f, lb.size.y / 2.f + lb.position.y });
@@ -442,20 +444,16 @@ void Renderer::drawSignals(const SimSnapshot& snap,
             float len = std::sqrt(d.x * d.x + d.y * d.y);
             if (len < 1.f) continue;
             sf::Vector2f u = d / len;
-            sf::Vector2f perp(-u.y, u.x);
 
-            // Always on perp- (opposite side from the flow label, which is
-            // always on perp+), so the two never crowd the same spot.
-            // Multiple signals at the same junction are staggered further
-            // back along the road instead of side-to-side, which is what
-            // was creating the cramped look in busy junctions.
-            float minDist = RING_RADIUS + SIGNAL_DOT_RADIUS + 14.f;
-            float distBack = minDist + 26.f * (float)i;
-            if (distBack > len - 12.f) distBack = std::max(minDist * 0.6f, len * 0.5f);
-            sf::Vector2f pos = b - u * distBack - perp * 16.f;
+            // Sits directly ON the road's own line (a genuine "stop line"),
+            // right at the edge of the ring -- each incoming road has its
+            // own line, so boxes from different roads never collide.
+            float distBack = std::min(RING_RADIUS + SIGNAL_BOX_W / 2.f + 6.f, len * 0.4f);
+            sf::Vector2f pos = b - u * distBack;
+            float angleDeg = std::atan2(d.y, d.x) * 180.f / 3.14159265f;
 
             bool isGreen = (roadIds[i] == activeRoad);
-            drawSignalDot(pos, roadIds[i], isGreen, r.blocked);
+            drawSignalBox(pos, angleDeg, roadIds[i], isGreen, r.blocked);
         }
     }
 }
@@ -485,8 +483,8 @@ void Renderer::drawLegend(const SimSnapshot&) {
     window.draw([&] { auto t = makeText("Blocked road", 13, sf::Color(225, 225, 221)); t.setPosition({ x + 40.f, y }); return t; }());
     y += rowH;
 
-    drawSignalDot({ x + 10.f, y + 8.f }, 0, true, false);
-    window.draw([&] { auto t = makeText("Traffic signal (labeled by road id)", 13, sf::Color(225, 225, 221)); t.setPosition({ x + 40.f, y }); return t; }());
+    drawSignalBox({ x + 12.f, y + 8.f }, 0.f, 0, true, false);
+    window.draw([&] { auto t = makeText("Signal box on road (labeled by road id)", 13, sf::Color(225, 225, 221)); t.setPosition({ x + 40.f, y }); return t; }());
     y += rowH + 8.f;
 
     sf::CircleShape ring(11.f);
@@ -557,8 +555,8 @@ void Renderer::render(const SimSnapshot& snapshot) {
     drawBackground();
     drawExternalStubs(snapshot, nodeById);
     drawRoads(snapshot, nodeById);
-    drawVehicles(snapshot, roadById, nodeById);
     drawSignals(snapshot, roadById, nodeById);
+    drawVehicles(snapshot, roadById, nodeById);
     drawJunctionLabels(snapshot);
 
     drawTitleBox(snapshot);

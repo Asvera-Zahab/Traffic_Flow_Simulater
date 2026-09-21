@@ -34,12 +34,3 @@ Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
 Road 2->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
 
-STEP [BY FILE MANAGER]50
-Road 0->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 1 Queue: 0 Congestion: 0.125 TravelTime: 1.80007
-Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 1 Queue: 0 Congestion: 0.0714286 TravelTime: 2.00001
-Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 2->4 Flow: 1 Queue: 0 Congestion: 0.142857 TravelTime: 2.18195
-
