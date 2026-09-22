@@ -113,21 +113,65 @@ public:
         // so a road's id is no longer a fixed number -- look up the specific
         // 0->2 direction by its endpoints instead of hardcoding an id that
         // would silently point at the wrong (possibly reverse) road.
-        int blockedRoad = graph.findRoadIndex(0, 2);
-
+        int blockedRoad = graph.findRoadIndex(1, 3);
+        int blockedRoad1 = graph.findRoadIndex(3, 1);
+        int blockedRoad2 = graph.findRoadIndex(1, 2);
+        int blockedRoad3 = graph.findRoadIndex(2, 1);
         SimEvent block;
         block.step = 15;
         block.type = ROAD_BLOCK;
         block.roadId = blockedRoad;
-        block.description = "Road 0->2 BLOCKED (accident)";
+        block.description = "Road 1->3 BLOCKED (dharna)";
         events.push_back(block);
+
+        SimEvent block1;
+        block1.step = 15;
+        block1.type = ROAD_BLOCK;
+        block1.roadId = blockedRoad1;
+        block1.description = "Road 3->1 BLOCKED (dharna)";
+        events.push_back(block1);
+
+        SimEvent block2;
+        block2.step = 15;
+        block2.type = ROAD_BLOCK;
+        block2.roadId = blockedRoad2;
+        block2.description = "Road 1->2 BLOCKED (dharna)";
+        events.push_back(block2);
+
+        SimEvent block3;
+        block3.step = 15;
+        block3.type = ROAD_BLOCK;
+        block3.roadId = blockedRoad3;
+        block3.description = "Road 2->1 BLOCKED (dharna)";
+        events.push_back(block3);
 
         SimEvent clear;
         clear.step = 25;
         clear.type = ROAD_CLEAR;
         clear.roadId = blockedRoad;
-        clear.description = "Road 0->2 CLEARED";
+        clear.description = "Road 1->3 CLEARED";
         events.push_back(clear);
+
+        SimEvent clear1;
+        clear1.step = 26;
+        clear1.type = ROAD_CLEAR;
+        clear1.roadId = blockedRoad1;
+        clear1.description = "Road 3->1 CLEARED";
+        events.push_back(clear1);
+
+        SimEvent clear2;
+        clear2.step = 27;
+        clear2.type = ROAD_CLEAR;
+        clear2.roadId = blockedRoad2;
+        clear2.description = "Road 1->2 CLEARED";
+        events.push_back(clear2);
+
+        SimEvent clear3;
+        clear3.step = 28;
+        clear3.type = ROAD_CLEAR;
+        clear3.roadId = blockedRoad3;
+        clear3.description = "Road 2->1 CLEARED";
+        events.push_back(clear3);
 
         SimEvent peak;
         peak.step = 20;

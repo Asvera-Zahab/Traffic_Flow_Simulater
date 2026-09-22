@@ -6,10 +6,10 @@ Total Simulation Steps : 300
 Vehicles Completed     : 445
 Vehicles Still Waiting : 16
 -----------------------------------
-Average Travel Time    : 5.14607 steps
-Total Delay            : 1164.33 steps
+Average Travel Time    : 5.32809 steps
+Total Delay            : 1245.45 steps
 Throughput             : 1.48333 vehicles/step
-Average Congestion     : 0.100922
-Most Congested Road ID : 6
+Average Congestion     : 0.052244
+Most Congested Road ID : 12
 Most Busy Node ID      : 0
 ------------------------------------

@@ -489,6 +489,17 @@ void Renderer::drawRoads(const SimSnapshot& snap, const std::map<int, NodeView>&
         drawRoadStrip(a, b, color, r.blocked, ROAD_WIDTH);
 
         sf::Vector2f mid = (a + b) / 2.f;
+
+        if (r.blocked)
+        {
+            drawContainer(mid, true);
+        }
+        else
+        {
+            sf::Vector2f cityPos = toScreen(itSrc->second.x, itSrc->second.y);
+            drawContainer(cityPos + sf::Vector2f(25.f, -25.f), false);
+        }
+
         if (!r.blocked) {
             // Direction arrow half-way along the road (soft white, clearly not a car).
             drawArrowHead(mid + u * 6.f, u, sf::Color(240, 243, 250, 210), 9.f);
@@ -503,7 +514,13 @@ void Renderer::drawRoads(const SimSnapshot& snap, const std::map<int, NodeView>&
         sf::Vector2f perp(-u.y, u.x);
         // Always on the SAME side (perp+) for every road, so it never
         // shares space with the signal boxes' own labels.
-        sf::Vector2f labelPos = mid + perp * 30.f;
+        float labelOffset = 30.f;
+
+		if (r.id == 4 || r.id == 5 || r.id==9)
+            labelOffset = 75.f;
+        
+
+        sf::Vector2f labelPos = mid + perp * labelOffset;
         const float pillW = lb.size.x + 36.f;
         window.draw(roundedLabelBox(labelPos + sf::Vector2f(0.f, 2.f), { pillW, 24.f }, sf::Color(0, 0, 0, 45), 12.f)); // shadow
         sf::ConvexShape pill = roundedLabelBox(labelPos, { pillW, 24.f }, PANEL_FILL, 12.f);
@@ -765,21 +782,41 @@ void Renderer::drawVehicles(const SimSnapshot& snap,
         sf::Vector2f pos = a + u * dist;
         const std::uint8_t alpha = static_cast<std::uint8_t>(std::clamp(fade, 0.f, 1.f) * 255.f);
 
-        float drawRadius = v.highlight ? radius + 1.5f : radius;
-        sf::CircleShape dot(drawRadius);
-        dot.setOrigin({ drawRadius, drawRadius });
-        dot.setPosition(pos);
+        // Tiny car-shaped body instead of a plain dot: a small rounded
+        // rectangle rotated to face `u` (the road's own direction, already
+        // lane-offset-correct), plus a pale "windshield" stripe toward the
+        // front so which way it's facing reads at a glance even this small.
+        // `scale` carries over the same shrink used for the old dot while
+        // a car is Exiting (driving into the junction and fading out).
+        float scale = radius / VEHICLE_RADIUS;
+        float carLen = (v.highlight ? 22.f : 13.f) * scale;  // along the direction of travel -- the generated car is drawn noticeably bigger
+        float carWid = carLen * 0.5f;                        // across the lane
+        float angleDeg = std::atan2(u.y, u.x) * 180.f / PI_F;
+
+        const sf::Color PURPLE(147, 51, 234, alpha);
+        sf::Color bodyColor = v.highlight ? PURPLE : sf::Color(24, 24, 26, alpha);
+        sf::Color outlineColor = v.highlight ? sf::Color(255, 255, 255, alpha) : sf::Color(225, 228, 235, alpha);
+
         if (v.highlight) {
-            dot.setFillColor(sf::Color(46, 226, 104, alpha));   // the "Run" button's green car
-            dot.setOutlineThickness(2.f);
-            dot.setOutlineColor(sf::Color(255, 255, 255, alpha));
+            // Soft glow behind the car (same trick as the signal boxes) so it
+            // reads as "the" car at a glance, not just another dot.
+            sf::ConvexShape glow = roundedLabelBox(pos, { carLen + 14.f, carWid + 14.f },
+                sf::Color(147, 51, 234, static_cast<std::uint8_t>(alpha * 0.35f)), (carWid + 14.f) * 0.4f);
+            glow.setRotation(sf::degrees(angleDeg));
+            window.draw(glow);
         }
-        else {
-            dot.setFillColor(sf::Color(10, 10, 10, alpha));
-            dot.setOutlineThickness(1.f);
-            dot.setOutlineColor(sf::Color(230, 230, 225, alpha));
-        }
-        window.draw(dot);
+
+        sf::ConvexShape car = roundedLabelBox(pos, { carLen, carWid }, bodyColor, carWid * 0.4f);
+        car.setRotation(sf::degrees(angleDeg));
+        car.setOutlineThickness(v.highlight ? 2.2f : 1.f);
+        car.setOutlineColor(outlineColor);
+        window.draw(car);
+
+        sf::Vector2f windshieldPos = pos + u * (carLen * 0.18f);
+        sf::ConvexShape windshield = roundedLabelBox(windshieldPos, { carLen * 0.34f, carWid * 0.62f },
+            sf::Color(235, 240, 250, static_cast<std::uint8_t>(alpha * 0.9f)), carWid * 0.25f);
+        windshield.setRotation(sf::degrees(angleDeg));
+        window.draw(windshield);
     }
 }
 
@@ -830,7 +867,23 @@ void Renderer::drawSignals(const SimSnapshot& snap,
         }
     }
 }
+void Renderer::drawContainer(sf::Vector2f pos, bool blocked)
+{
+    sf::RectangleShape container({ 22.f, 12.f });
 
+    container.setOrigin({ 11.f, 6.f });
+    container.setPosition(pos);
+
+    if (blocked)
+        container.setFillColor(sf::Color(235, 80, 80));
+    else
+        container.setFillColor(sf::Color(70, 160, 235));
+
+    container.setOutlineThickness(1.5f);
+    container.setOutlineColor(sf::Color(240, 240, 240));
+
+    window.draw(container);
+}
 // ---- legend (bottom-left, always visible) ----
 
 void Renderer::drawLegend(const SimSnapshot&) {

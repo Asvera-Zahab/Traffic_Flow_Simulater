@@ -86,7 +86,7 @@ public:
     bool isOpen() const;
     void pollEvents();
     void render(const SimSnapshot& snapshot);
-
+    void drawContainer(sf::Vector2f pos, bool blocked);
     bool isPaused() const { return paused; }
     float getSpeedMultiplier() const { return speedMultiplier; }
 

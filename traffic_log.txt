@@ -97,835 +97,534 @@ STEP [BY FILE MANAGER]14
   Avg Travel Time   : 6.16667
 -----------------------------
 STEP [BY FILE MANAGER]15
-  Vehicles Moving   : 7
-  Vehicles Waiting  : 0
+  Vehicles Moving   : 6
+  Vehicles Waiting  : 1
   Completed         : 6
-  Avg Congestion    : 0.0659864
+  Avg Congestion    : 0.0489796
   Avg Travel Time   : 6.16667
 -----------------------------
 STEP [BY FILE MANAGER]16
   Vehicles Moving   : 3
   Vehicles Waiting  : 1
   Completed         : 10
-  Avg Congestion    : 0.0102041
+  Avg Congestion    : 0
   Avg Travel Time   : 6.2
 -----------------------------
 STEP [BY FILE MANAGER]17
   Vehicles Moving   : 5
   Vehicles Waiting  : 1
   Completed         : 10
-  Avg Congestion    : 0.0204082
+  Avg Congestion    : 0.0191327
   Avg Travel Time   : 6.2
 -----------------------------
 STEP [BY FILE MANAGER]18
   Vehicles Moving   : 7
   Vehicles Waiting  : 1
   Completed         : 10
-  Avg Congestion    : 0.0406463
+  Avg Congestion    : 0.0393707
   Avg Travel Time   : 6.2
 -----------------------------
 STEP [BY FILE MANAGER]19
   Vehicles Moving   : 5
   Vehicles Waiting  : 1
   Completed         : 12
-  Avg Congestion    : 0.0447279
+  Avg Congestion    : 0.0434524
   Avg Travel Time   : 5.91667
 -----------------------------
 STEP [BY FILE MANAGER]20
-  Vehicles Moving   : 3
-  Vehicles Waiting  : 2
+  Vehicles Moving   : 4
+  Vehicles Waiting  : 1
   Completed         : 14
-  Avg Congestion    : 0.0161565
+  Avg Congestion    : 0.014881
   Avg Travel Time   : 5.35714
 -----------------------------
 STEP [BY FILE MANAGER]21
-  Vehicles Moving   : 1
-  Vehicles Waiting  : 3
+  Vehicles Moving   : 2
+  Vehicles Waiting  : 2
   Completed         : 16
-  Avg Congestion    : 0
-  Avg Travel Time   : 5.75
+  Avg Congestion    : 0.00892857
+  Avg Travel Time   : 5.5625
 -----------------------------
 STEP [BY FILE MANAGER]22
-  Vehicles Moving   : 2
-  Vehicles Waiting  : 4
+  Vehicles Moving   : 3
+  Vehicles Waiting  : 3
   Completed         : 16
-  Avg Congestion    : 0.00510204
-  Avg Travel Time   : 5.75
+  Avg Congestion    : 0.00892857
+  Avg Travel Time   : 5.5625
 -----------------------------
 STEP [BY FILE MANAGER]23
-  Vehicles Moving   : 3
-  Vehicles Waiting  : 5
+  Vehicles Moving   : 5
+  Vehicles Waiting  : 3
   Completed         : 17
-  Avg Congestion    : 0.0119048
-  Avg Travel Time   : 5.76471
+  Avg Congestion    : 0.0191327
+  Avg Travel Time   : 5.35294
 -----------------------------
 STEP [BY FILE MANAGER]24
-  Vehicles Moving   : 5
+  Vehicles Moving   : 4
   Vehicles Waiting  : 5
-  Completed         : 17
-  Avg Congestion    : 0.0321429
-  Avg Travel Time   : 5.76471
+  Completed         : 18
+  Avg Congestion    : 0.0393707
+  Avg Travel Time   : 5.16667
 -----------------------------
 STEP [BY FILE MANAGER]25
-  Vehicles Moving   : 11
-  Vehicles Waiting  : 0
-  Completed         : 17
-  Avg Congestion    : 0.05
-  Avg Travel Time   : 5.76471
+  Vehicles Moving   : 7
+  Vehicles Waiting  : 3
+  Completed         : 18
+  Avg Congestion    : 0.0244898
+  Avg Travel Time   : 5.16667
 -----------------------------
 STEP [BY FILE MANAGER]26
-  Vehicles Moving   : 9
-  Vehicles Waiting  : 0
-  Completed         : 21
-  Avg Congestion    : 0.0640306
-  Avg Travel Time   : 5.19048
+  Vehicles Moving   : 5
+  Vehicles Waiting  : 5
+  Completed         : 20
+  Avg Congestion    : 0.0512755
+  Avg Travel Time   : 5.1
 -----------------------------
 STEP [BY FILE MANAGER]27
-  Vehicles Moving   : 8
+  Vehicles Moving   : 10
   Vehicles Waiting  : 0
-  Completed         : 23
-  Avg Congestion    : 0.0497449
-  Avg Travel Time   : 4.86957
+  Completed         : 21
+  Avg Congestion    : 0.0369898
+  Avg Travel Time   : 4.95238
 -----------------------------
 STEP [BY FILE MANAGER]28
-  Vehicles Moving   : 12
+  Vehicles Moving   : 9
   Vehicles Waiting  : 0
-  Completed         : 23
-  Avg Congestion    : 0.0742347
-  Avg Travel Time   : 4.86957
+  Completed         : 26
+  Avg Congestion    : 0.0410714
+  Avg Travel Time   : 4.80769
 -----------------------------
 STEP [BY FILE MANAGER]29
-  Vehicles Moving   : 14
+  Vehicles Moving   : 11
   Vehicles Waiting  : 0
-  Completed         : 25
-  Avg Congestion    : 0.0829082
-  Avg Travel Time   : 4.6
+  Completed         : 28
+  Avg Congestion    : 0.0637755
+  Avg Travel Time   : 4.57143
 -----------------------------
 STEP [BY FILE MANAGER]30
-  Vehicles Moving   : 15
-  Vehicles Waiting  : 1
-  Completed         : 26
-  Avg Congestion    : 0.0959184
-  Avg Travel Time   : 4.57692
+  Vehicles Moving   : 14
+  Vehicles Waiting  : 0
+  Completed         : 28
+  Avg Congestion    : 0.0869898
+  Avg Travel Time   : 4.57143
 -----------------------------
 STEP [BY FILE MANAGER]31
-  Vehicles Moving   : 11
-  Vehicles Waiting  : 1
-  Completed         : 32
-  Avg Congestion    : 0.0632653
-  Avg Travel Time   : 5.21875
+  Vehicles Moving   : 10
+  Vehicles Waiting  : 0
+  Completed         : 34
+  Avg Congestion    : 0.0721939
+  Avg Travel Time   : 5.26471
 -----------------------------
 STEP [BY FILE MANAGER]32
-  Vehicles Moving   : 13
+  Vehicles Moving   : 11
   Vehicles Waiting  : 0
-  Completed         : 32
-  Avg Congestion    : 0.126616
-  Avg Travel Time   : 5.21875
+  Completed         : 34
+  Avg Congestion    : 0.101531
+  Avg Travel Time   : 5.26471
 -----------------------------
 STEP [BY FILE MANAGER]33
-  Vehicles Moving   : 13
+  Vehicles Moving   : 11
   Vehicles Waiting  : 0
-  Completed         : 32
-  Avg Congestion    : 0.13682
-  Avg Travel Time   : 5.21875
+  Completed         : 34
+  Avg Congestion    : 0.120663
+  Avg Travel Time   : 5.26471
 -----------------------------
 STEP [BY FILE MANAGER]34
-  Vehicles Moving   : 14
-  Vehicles Waiting  : 1
-  Completed         : 32
-  Avg Congestion    : 0.138095
-  Avg Travel Time   : 5.21875
+  Vehicles Moving   : 13
+  Vehicles Waiting  : 0
+  Completed         : 34
+  Avg Congestion    : 0.111735
+  Avg Travel Time   : 5.26471
 -----------------------------
 STEP [BY FILE MANAGER]35
-  Vehicles Moving   : 15
-  Vehicles Waiting  : 1
-  Completed         : 32
-  Avg Congestion    : 0.16131
-  Avg Travel Time   : 5.21875
+  Vehicles Moving   : 14
+  Vehicles Waiting  : 0
+  Completed         : 34
+  Avg Congestion    : 0.145153
+  Avg Travel Time   : 5.26471
 -----------------------------
 STEP [BY FILE MANAGER]36
-  Vehicles Moving   : 3
-  Vehicles Waiting  : 1
+  Vehicles Moving   : 4
+  Vehicles Waiting  : 0
   Completed         : 44
-  Avg Congestion    : 0.0178571
-  Avg Travel Time   : 5.84091
+  Avg Congestion    : 0.0280612
+  Avg Travel Time   : 5.45455
 -----------------------------
 STEP [BY FILE MANAGER]37
   Vehicles Moving   : 4
-  Vehicles Waiting  : 1
-  Completed         : 44
+  Vehicles Waiting  : 0
+  Completed         : 45
   Avg Congestion    : 0.0280612
-  Avg Travel Time   : 5.84091
+  Avg Travel Time   : 5.44444
 -----------------------------
 STEP [BY FILE MANAGER]38
   Vehicles Moving   : 4
-  Vehicles Waiting  : 1
-  Completed         : 44
+  Vehicles Waiting  : 0
+  Completed         : 45
   Avg Congestion    : 0.0369898
-  Avg Travel Time   : 5.84091
+  Avg Travel Time   : 5.44444
 -----------------------------
 STEP [BY FILE MANAGER]39
   Vehicles Moving   : 3
-  Vehicles Waiting  : 1
-  Completed         : 45
+  Vehicles Waiting  : 0
+  Completed         : 46
   Avg Congestion    : 0.0267857
-  Avg Travel Time   : 5.88889
+  Avg Travel Time   : 5.5
 -----------------------------
 STEP [BY FILE MANAGER]40
   Vehicles Moving   : 5
-  Vehicles Waiting  : 1
-  Completed         : 45
+  Vehicles Waiting  : 0
+  Completed         : 46
   Avg Congestion    : 0.0267857
-  Avg Travel Time   : 5.88889
+  Avg Travel Time   : 5.5
 -----------------------------
 STEP [BY FILE MANAGER]41
-  Vehicles Moving   : 5
+  Vehicles Moving   : 4
   Vehicles Waiting  : 0
-  Completed         : 47
-  Avg Congestion    : 0.0208333
-  Avg Travel Time   : 5.87234
+  Completed         : 48
+  Avg Congestion    : 0.0178571
+  Avg Travel Time   : 5.5
 -----------------------------
 STEP [BY FILE MANAGER]42
-  Vehicles Moving   : 7
+  Vehicles Moving   : 6
   Vehicles Waiting  : 0
-  Completed         : 48
-  Avg Congestion    : 0.0442177
-  Avg Travel Time   : 5.79167
+  Completed         : 49
+  Avg Congestion    : 0.0280612
+  Avg Travel Time   : 5.42857
 -----------------------------
 STEP [BY FILE MANAGER]43
-  Vehicles Moving   : 7
+  Vehicles Moving   : 6
   Vehicles Waiting  : 0
-  Completed         : 48
-  Avg Congestion    : 0.0763605
-  Avg Travel Time   : 5.79167
+  Completed         : 49
+  Avg Congestion    : 0.0572279
+  Avg Travel Time   : 5.42857
 -----------------------------
 STEP [BY FILE MANAGER]44
-  Vehicles Moving   : 11
+  Vehicles Moving   : 10
   Vehicles Waiting  : 0
-  Completed         : 48
-  Avg Congestion    : 0.0704082
-  Avg Travel Time   : 5.79167
+  Completed         : 49
+  Avg Congestion    : 0.0512755
+  Avg Travel Time   : 5.42857
 -----------------------------
 STEP [BY FILE MANAGER]45
-  Vehicles Moving   : 13
+  Vehicles Moving   : 12
   Vehicles Waiting  : 0
-  Completed         : 48
-  Avg Congestion    : 0.118707
-  Avg Travel Time   : 5.79167
+  Completed         : 49
+  Avg Congestion    : 0.101276
+  Avg Travel Time   : 5.42857
 -----------------------------
 STEP [BY FILE MANAGER]46
   Vehicles Moving   : 7
   Vehicles Waiting  : 2
   Completed         : 53
-  Avg Congestion    : 0.0363946
-  Avg Travel Time   : 5.86792
+  Avg Congestion    : 0.0410714
+  Avg Travel Time   : 5.37736
 -----------------------------
 STEP [BY FILE MANAGER]47
   Vehicles Moving   : 9
   Vehicles Waiting  : 1
   Completed         : 54
-  Avg Congestion    : 0.0365646
-  Avg Travel Time   : 5.7963
+  Avg Congestion    : 0.0442177
+  Avg Travel Time   : 5.31481
 -----------------------------
 STEP [BY FILE MANAGER]48
   Vehicles Moving   : 10
   Vehicles Waiting  : 0
   Completed         : 55
-  Avg Congestion    : 0.0620748
-  Avg Travel Time   : 5.70909
+  Avg Congestion    : 0.0735544
+  Avg Travel Time   : 5.23636
 -----------------------------
 STEP [BY FILE MANAGER]49
   Vehicles Moving   : 9
   Vehicles Waiting  : 0
   Completed         : 57
-  Avg Congestion    : 0.0518707
-  Avg Travel Time   : 5.80702
+  Avg Congestion    : 0.0633503
+  Avg Travel Time   : 5.35088
 -----------------------------
 STEP [BY FILE MANAGER]50
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 59
-  Avg Congestion    : 0.0505952
-  Avg Travel Time   : 5.84746
+  Avg Congestion    : 0.0620748
+  Avg Travel Time   : 5.40678
 -----------------------------
 STEP [BY FILE MANAGER]51
   Vehicles Moving   : 5
   Vehicles Waiting  : 0
   Completed         : 63
   Avg Congestion    : 0.0102041
-  Avg Travel Time   : 5.88889
+  Avg Travel Time   : 5.47619
 -----------------------------
 STEP [BY FILE MANAGER]52
   Vehicles Moving   : 6
   Vehicles Waiting  : 0
   Completed         : 63
-  Avg Congestion    : 0.0487245
-  Avg Travel Time   : 5.88889
+  Avg Congestion    : 0.052551
+  Avg Travel Time   : 5.47619
 -----------------------------
 STEP [BY FILE MANAGER]53
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 65
-  Avg Congestion    : 0.0465986
-  Avg Travel Time   : 5.84615
+  Avg Congestion    : 0.0436224
+  Avg Travel Time   : 5.44615
 -----------------------------
 STEP [BY FILE MANAGER]54
   Vehicles Moving   : 9
   Vehicles Waiting  : 0
   Completed         : 65
-  Avg Congestion    : 0.0840986
-  Avg Travel Time   : 5.84615
+  Avg Congestion    : 0.0811224
+  Avg Travel Time   : 5.44615
 -----------------------------
 STEP [BY FILE MANAGER]55
   Vehicles Moving   : 10
   Vehicles Waiting  : 0
   Completed         : 65
-  Avg Congestion    : 0.0921769
-  Avg Travel Time   : 5.84615
+  Avg Congestion    : 0.090051
+  Avg Travel Time   : 5.44615
 -----------------------------
 STEP [BY FILE MANAGER]56
   Vehicles Moving   : 5
   Vehicles Waiting  : 0
   Completed         : 70
-  Avg Congestion    : 0.0212585
-  Avg Travel Time   : 5.8
+  Avg Congestion    : 0.025085
+  Avg Travel Time   : 5.42857
 -----------------------------
 STEP [BY FILE MANAGER]57
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 70
-  Avg Congestion    : 0.0416667
-  Avg Travel Time   : 5.8
+  Avg Congestion    : 0.0454932
+  Avg Travel Time   : 5.42857
 -----------------------------
 STEP [BY FILE MANAGER]58
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 71
-  Avg Congestion    : 0.0365646
-  Avg Travel Time   : 5.78873
+  Avg Congestion    : 0.0442177
+  Avg Travel Time   : 5.42254
 -----------------------------
 STEP [BY FILE MANAGER]59
   Vehicles Moving   : 8
   Vehicles Waiting  : 0
   Completed         : 73
-  Avg Congestion    : 0.0314626
-  Avg Travel Time   : 5.79452
+  Avg Congestion    : 0.0429422
+  Avg Travel Time   : 5.43836
 -----------------------------
 STEP [BY FILE MANAGER]60
   Vehicles Moving   : 8
   Vehicles Waiting  : 0
   Completed         : 74
-  Avg Congestion    : 0.0508503
-  Avg Travel Time   : 5.72973
+  Avg Congestion    : 0.0661565
+  Avg Travel Time   : 5.37838
 -----------------------------
 STEP [BY FILE MANAGER]61
   Vehicles Moving   : 6
   Vehicles Waiting  : 0
   Completed         : 78
-  Avg Congestion    : 0.0253401
-  Avg Travel Time   : 5.66667
+  Avg Congestion    : 0.0291667
+  Avg Travel Time   : 5.33333
 -----------------------------
 STEP [BY FILE MANAGER]62
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 79
-  Avg Congestion    : 0.0372449
-  Avg Travel Time   : 5.63291
+  Avg Congestion    : 0.0380952
+  Avg Travel Time   : 5.3038
 -----------------------------
 STEP [BY FILE MANAGER]63
   Vehicles Moving   : 8
   Vehicles Waiting  : 0
   Completed         : 79
-  Avg Congestion    : 0.0504252
-  Avg Travel Time   : 5.63291
+  Avg Congestion    : 0.0589286
+  Avg Travel Time   : 5.3038
 -----------------------------
 STEP [BY FILE MANAGER]64
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 81
-  Avg Congestion    : 0.0534014
-  Avg Travel Time   : 5.62963
+  Avg Congestion    : 0.0589286
+  Avg Travel Time   : 5.30864
 -----------------------------
 STEP [BY FILE MANAGER]65
   Vehicles Moving   : 5
   Vehicles Waiting  : 0
   Completed         : 83
-  Avg Congestion    : 0.057483
-  Avg Travel Time   : 5.59036
+  Avg Congestion    : 0.0553571
+  Avg Travel Time   : 5.27711
 -----------------------------
 STEP [BY FILE MANAGER]66
   Vehicles Moving   : 2
   Vehicles Waiting  : 0
   Completed         : 88
   Avg Congestion    : 0
-  Avg Travel Time   : 5.52273
+  Avg Travel Time   : 5.22727
 -----------------------------
 STEP [BY FILE MANAGER]67
   Vehicles Moving   : 5
   Vehicles Waiting  : 0
   Completed         : 88
-  Avg Congestion    : 0.0140306
-  Avg Travel Time   : 5.52273
+  Avg Congestion    : 0.0178571
+  Avg Travel Time   : 5.22727
 -----------------------------
 STEP [BY FILE MANAGER]68
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 89
-  Avg Congestion    : 0.0191327
-  Avg Travel Time   : 5.47191
+  Avg Congestion    : 0.0267857
+  Avg Travel Time   : 5.17978
 -----------------------------
 STEP [BY FILE MANAGER]69
   Vehicles Moving   : 8
   Vehicles Waiting  : 0
   Completed         : 89
-  Avg Congestion    : 0.0403912
-  Avg Travel Time   : 5.47191
+  Avg Congestion    : 0.0518707
+  Avg Travel Time   : 5.17978
 -----------------------------
 STEP [BY FILE MANAGER]70
   Vehicles Moving   : 10
   Vehicles Waiting  : 0
   Completed         : 89
-  Avg Congestion    : 0.0505952
-  Avg Travel Time   : 5.47191
+  Avg Congestion    : 0.0620748
+  Avg Travel Time   : 5.17978
 -----------------------------
 STEP [BY FILE MANAGER]71
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 93
-  Avg Congestion    : 0.0314626
-  Avg Travel Time   : 5.4086
+  Avg Congestion    : 0.0352891
+  Avg Travel Time   : 5.12903
 -----------------------------
 STEP [BY FILE MANAGER]72
   Vehicles Moving   : 8
   Vehicles Waiting  : 0
   Completed         : 93
-  Avg Congestion    : 0.0467687
-  Avg Travel Time   : 5.4086
+  Avg Congestion    : 0.0544218
+  Avg Travel Time   : 5.12903
 -----------------------------
 STEP [BY FILE MANAGER]73
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 94
-  Avg Congestion    : 0.0527211
-  Avg Travel Time   : 5.38298
+  Avg Congestion    : 0.057398
+  Avg Travel Time   : 5.10638
 -----------------------------
 STEP [BY FILE MANAGER]74
   Vehicles Moving   : 6
   Vehicles Waiting  : 0
   Completed         : 95
-  Avg Congestion    : 0.0527211
-  Avg Travel Time   : 5.38947
+  Avg Congestion    : 0.057398
+  Avg Travel Time   : 5.11579
 -----------------------------
 STEP [BY FILE MANAGER]75
   Vehicles Moving   : 6
   Vehicles Waiting  : 0
   Completed         : 96
-  Avg Congestion    : 0.047619
-  Avg Travel Time   : 5.38542
+  Avg Congestion    : 0.0484694
+  Avg Travel Time   : 5.11458
 -----------------------------
 STEP [BY FILE MANAGER]76
   Vehicles Moving   : 4
   Vehicles Waiting  : 0
   Completed         : 101
   Avg Congestion    : 0.00595238
-  Avg Travel Time   : 5.45545
+  Avg Travel Time   : 5.19802
 -----------------------------
 STEP [BY FILE MANAGER]77
   Vehicles Moving   : 6
   Vehicles Waiting  : 0
   Completed         : 101
-  Avg Congestion    : 0.0259354
-  Avg Travel Time   : 5.45545
+  Avg Congestion    : 0.0297619
+  Avg Travel Time   : 5.19802
 -----------------------------
 STEP [BY FILE MANAGER]78
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 102
-  Avg Congestion    : 0.0348639
-  Avg Travel Time   : 5.41176
+  Avg Congestion    : 0.0386905
+  Avg Travel Time   : 5.15686
 -----------------------------
 STEP [BY FILE MANAGER]79
   Vehicles Moving   : 9
   Vehicles Waiting  : 0
   Completed         : 103
-  Avg Congestion    : 0.0348639
-  Avg Travel Time   : 5.36893
+  Avg Congestion    : 0.0386905
+  Avg Travel Time   : 5.1165
 -----------------------------
 STEP [BY FILE MANAGER]80
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 105
-  Avg Congestion    : 0.0539966
-  Avg Travel Time   : 5.28571
+  Avg Congestion    : 0.0578231
+  Avg Travel Time   : 5.0381
 -----------------------------
 STEP [BY FILE MANAGER]81
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 106
   Avg Congestion    : 0.0102041
-  Avg Travel Time   : 5.28302
+  Avg Travel Time   : 5.03774
 -----------------------------
 STEP [BY FILE MANAGER]82
   Vehicles Moving   : 7
   Vehicles Waiting  : 0
   Completed         : 106
-  Avg Congestion    : 0.0569728
-  Avg Travel Time   : 5.28302
+  Avg Congestion    : 0.0646259
+  Avg Travel Time   : 5.03774
 -----------------------------
 STEP [BY FILE MANAGER]83
   Vehicles Moving   : 9
   Vehicles Waiting  : 0
   Completed         : 108
   Avg Congestion    : 0.0408163
-  Avg Travel Time   : 5.32407
+  Avg Travel Time   : 5.08333
 -----------------------------
 STEP [BY FILE MANAGER]84
   Vehicles Moving   : 11
   Vehicles Waiting  : 0
   Completed         : 108
-  Avg Congestion    : 0.0807823
-  Avg Travel Time   : 5.32407
+  Avg Congestion    : 0.0854592
+  Avg Travel Time   : 5.08333
 -----------------------------
 STEP [BY FILE MANAGER]85
   Vehicles Moving   : 12
   Vehicles Waiting  : 0
   Completed         : 111
-  Avg Congestion    : 0.067602
-  Avg Travel Time   : 5.25225
+  Avg Congestion    : 0.0646259
+  Avg Travel Time   : 5.01802
 -----------------------------
 STEP [BY FILE MANAGER]86
   Vehicles Moving   : 9
   Vehicles Waiting  : 0
   Completed         : 116
-  Avg Congestion    : 0.0623299
-  Avg Travel Time   : 5.34483
+  Avg Congestion    : 0.0661565
+  Avg Travel Time   : 5.12069
 -----------------------------
 STEP [BY FILE MANAGER]87
   Vehicles Moving   : 10
   Vehicles Waiting  : 0
   Completed         : 117
-  Avg Congestion    : 0.059949
-  Avg Travel Time   : 5.31624
+  Avg Congestion    : 0.0637755
+  Avg Travel Time   : 5.09402
 -----------------------------
 STEP [BY FILE MANAGER]88
   Vehicles Moving   : 11
   Vehicles Waiting  : 0
   Completed         : 119
-  Avg Congestion    : 0.0497449
-  Avg Travel Time   : 5.27731
+  Avg Congestion    : 0.0535714
+  Avg Travel Time   : 5.05882
 -----------------------------
 STEP [BY FILE MANAGER]89
   Vehicles Moving   : 13
   Vehicles Waiting  : 0
   Completed         : 120
-  Avg Congestion    : 0.0778061
-  Avg Travel Time   : 5.24167
+  Avg Congestion    : 0.0816327
+  Avg Travel Time   : 5.025
 -----------------------------
 STEP [BY FILE MANAGER]90
   Vehicles Moving   : 11
   Vehicles Waiting  : 0
   Completed         : 122
-  Avg Congestion    : 0.0778061
-  Avg Travel Time   : 5.17213
------------------------------
-STEP [BY FILE MANAGER]91
-  Vehicles Moving   : 7
-  Vehicles Waiting  : 1
-  Completed         : 125
-  Avg Congestion    : 0.0102041
-  Avg Travel Time   : 5.184
------------------------------
-STEP [BY FILE MANAGER]92
-  Vehicles Moving   : 10
-  Vehicles Waiting  : 0
-  Completed         : 125
-  Avg Congestion    : 0.0561224
-  Avg Travel Time   : 5.184
------------------------------
-STEP [BY FILE MANAGER]93
-  Vehicles Moving   : 10
-  Vehicles Waiting  : 0
-  Completed         : 128
-  Avg Congestion    : 0.0688776
-  Avg Travel Time   : 5.24219
------------------------------
-STEP [BY FILE MANAGER]94
-  Vehicles Moving   : 11
-  Vehicles Waiting  : 0
-  Completed         : 128
-  Avg Congestion    : 0.095068
-  Avg Travel Time   : 5.24219
------------------------------
-STEP [BY FILE MANAGER]95
-  Vehicles Moving   : 11
-  Vehicles Waiting  : 0
-  Completed         : 129
-  Avg Congestion    : 0.0942177
-  Avg Travel Time   : 5.21705
------------------------------
-STEP [BY FILE MANAGER]96
-  Vehicles Moving   : 4
-  Vehicles Waiting  : 0
-  Completed         : 137
-  Avg Congestion    : 0.0272109
-  Avg Travel Time   : 5.30657
------------------------------
-STEP [BY FILE MANAGER]97
-  Vehicles Moving   : 4
-  Vehicles Waiting  : 0
-  Completed         : 137
-  Avg Congestion    : 0.0272109
-  Avg Travel Time   : 5.30657
------------------------------
-STEP [BY FILE MANAGER]98
-  Vehicles Moving   : 3
-  Vehicles Waiting  : 0
-  Completed         : 139
-  Avg Congestion    : 0.0153061
-  Avg Travel Time   : 5.28058
------------------------------
-STEP [BY FILE MANAGER]99
-  Vehicles Moving   : 4
-  Vehicles Waiting  : 0
-  Completed         : 139
-  Avg Congestion    : 0.0212585
-  Avg Travel Time   : 5.28058
------------------------------
-STEP [BY FILE MANAGER]100
-  Vehicles Moving   : 5
-  Vehicles Waiting  : 0
-  Completed         : 140
-  Avg Congestion    : 0.0161565
-  Avg Travel Time   : 5.27857
------------------------------
-STEP [BY FILE MANAGER]101
-  Vehicles Moving   : 4
-  Vehicles Waiting  : 0
-  Completed         : 141
-  Avg Congestion    : 0.0221088
-  Avg Travel Time   : 5.30496
------------------------------
-STEP [BY FILE MANAGER]102
-  Vehicles Moving   : 6
-  Vehicles Waiting  : 0
-  Completed         : 142
-  Avg Congestion    : 0.0221088
-  Avg Travel Time   : 5.28873
------------------------------
-STEP [BY FILE MANAGER]103
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 0
-  Completed         : 143
-  Avg Congestion    : 0.0467687
-  Avg Travel Time   : 5.27273
------------------------------
-STEP [BY FILE MANAGER]104
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 0
-  Completed         : 144
-  Avg Congestion    : 0.0708333
-  Avg Travel Time   : 5.27778
------------------------------
-STEP [BY FILE MANAGER]105
-  Vehicles Moving   : 9
-  Vehicles Waiting  : 0
-  Completed         : 144
-  Avg Congestion    : 0.0759354
-  Avg Travel Time   : 5.27778
------------------------------
-STEP [BY FILE MANAGER]106
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 1
-  Completed         : 146
-  Avg Congestion    : 0.0301871
-  Avg Travel Time   : 5.25342
------------------------------
-STEP [BY FILE MANAGER]107
-  Vehicles Moving   : 13
-  Vehicles Waiting  : 0
-  Completed         : 146
-  Avg Congestion    : 0.0595238
-  Avg Travel Time   : 5.25342
------------------------------
-STEP [BY FILE MANAGER]108
-  Vehicles Moving   : 15
-  Vehicles Waiting  : 0
-  Completed         : 147
-  Avg Congestion    : 0.089966
-  Avg Travel Time   : 5.2517
------------------------------
-STEP [BY FILE MANAGER]109
-  Vehicles Moving   : 9
-  Vehicles Waiting  : 0
-  Completed         : 153
-  Avg Congestion    : 0.0756803
-  Avg Travel Time   : 5.18301
------------------------------
-STEP [BY FILE MANAGER]110
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 0
-  Completed         : 155
-  Avg Congestion    : 0.0552721
-  Avg Travel Time   : 5.1871
------------------------------
-STEP [BY FILE MANAGER]111
-  Vehicles Moving   : 4
-  Vehicles Waiting  : 0
-  Completed         : 160
-  Avg Congestion    : 0.00595238
-  Avg Travel Time   : 5.20625
------------------------------
-STEP [BY FILE MANAGER]112
-  Vehicles Moving   : 6
-  Vehicles Waiting  : 0
-  Completed         : 160
-  Avg Congestion    : 0.0244898
-  Avg Travel Time   : 5.20625
------------------------------
-STEP [BY FILE MANAGER]113
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 0
-  Completed         : 162
-  Avg Congestion    : 0.0402211
-  Avg Travel Time   : 5.2284
------------------------------
-STEP [BY FILE MANAGER]114
-  Vehicles Moving   : 12
-  Vehicles Waiting  : 0
-  Completed         : 163
-  Avg Congestion    : 0.0640306
-  Avg Travel Time   : 5.20859
------------------------------
-STEP [BY FILE MANAGER]115
-  Vehicles Moving   : 13
-  Vehicles Waiting  : 0
-  Completed         : 165
-  Avg Congestion    : 0.0676871
-  Avg Travel Time   : 5.18788
------------------------------
-STEP [BY FILE MANAGER]116
-  Vehicles Moving   : 14
-  Vehicles Waiting  : 0
-  Completed         : 167
-  Avg Congestion    : 0.0697279
-  Avg Travel Time   : 5.16766
------------------------------
-STEP [BY FILE MANAGER]117
-  Vehicles Moving   : 15
-  Vehicles Waiting  : 0
-  Completed         : 169
-  Avg Congestion    : 0.1
-  Avg Travel Time   : 5.13018
------------------------------
-STEP [BY FILE MANAGER]118
-  Vehicles Moving   : 11
-  Vehicles Waiting  : 0
-  Completed         : 174
-  Avg Congestion    : 0.0688776
-  Avg Travel Time   : 5.06897
------------------------------
-STEP [BY FILE MANAGER]119
-  Vehicles Moving   : 10
-  Vehicles Waiting  : 0
-  Completed         : 176
-  Avg Congestion    : 0.0544218
-  Avg Travel Time   : 5.07955
------------------------------
-STEP [BY FILE MANAGER]120
-  Vehicles Moving   : 14
-  Vehicles Waiting  : 0
-  Completed         : 176
-  Avg Congestion    : 0.0603741
-  Avg Travel Time   : 5.07955
------------------------------
-STEP [BY FILE MANAGER]121
-  Vehicles Moving   : 10
-  Vehicles Waiting  : 0
-  Completed         : 183
-  Avg Congestion    : 0.0380952
-  Avg Travel Time   : 5.12568
------------------------------
-STEP [BY FILE MANAGER]122
-  Vehicles Moving   : 10
-  Vehicles Waiting  : 0
-  Completed         : 183
-  Avg Congestion    : 0.0778912
-  Avg Travel Time   : 5.12568
------------------------------
-STEP [BY FILE MANAGER]123
-  Vehicles Moving   : 9
-  Vehicles Waiting  : 0
-  Completed         : 186
-  Avg Congestion    : 0.0727891
-  Avg Travel Time   : 5.10215
------------------------------
-STEP [BY FILE MANAGER]124
-  Vehicles Moving   : 12
-  Vehicles Waiting  : 0
-  Completed         : 186
-  Avg Congestion    : 0.0868197
-  Avg Travel Time   : 5.10215
------------------------------
-STEP [BY FILE MANAGER]125
-  Vehicles Moving   : 11
-  Vehicles Waiting  : 0
-  Completed         : 188
-  Avg Congestion    : 0.0998299
-  Avg Travel Time   : 5.10106
------------------------------
-STEP [BY FILE MANAGER]126
-  Vehicles Moving   : 7
-  Vehicles Waiting  : 0
-  Completed         : 195
-  Avg Congestion    : 0.0369898
-  Avg Travel Time   : 5.10256
------------------------------
-STEP [BY FILE MANAGER]127
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 0
-  Completed         : 196
-  Avg Congestion    : 0.0429422
-  Avg Travel Time   : 5.08163
------------------------------
-STEP [BY FILE MANAGER]128
-  Vehicles Moving   : 7
-  Vehicles Waiting  : 0
-  Completed         : 197
-  Avg Congestion    : 0.0578231
-  Avg Travel Time   : 5.08122
------------------------------
-STEP [BY FILE MANAGER]129
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 0
-  Completed         : 197
-  Avg Congestion    : 0.0578231
-  Avg Travel Time   : 5.08122
------------------------------
-STEP [BY FILE MANAGER]130
-  Vehicles Moving   : 8
-  Vehicles Waiting  : 0
-  Completed         : 198
-  Avg Congestion    : 0.0565476
-  Avg Travel Time   : 5.07576
------------------------------
-STEP [BY FILE MANAGER]131
-  Vehicles Moving   : 7
-  Vehicles Waiting  : 0
-  Completed         : 201
-  Avg Congestion    : 0.00510204
-  Avg Travel Time   : 5.08458
------------------------------
-STEP [BY FILE MANAGER]132
-  Vehicles Moving   : 7
-  Vehicles Waiting  : 0
-  Completed         : 202
-  Avg Congestion    : 0.042517
-  Avg Travel Time   : 5.06931
------------------------------
-STEP [BY FILE MANAGER]133
-  Vehicles Moving   : 9
-  Vehicles Waiting  : 0
-  Completed         : 202
-  Avg Congestion    : 0.0395408
-  Avg Travel Time   : 5.06931
+  Avg Congestion    : 0.0816327
+  Avg Travel Time   : 4.95902
 -----------------------------

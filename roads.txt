@@ -15,13 +15,13 @@ Road 2->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
 Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
 
 STEP [BY FILE MANAGER]20
-Road 0->1 Flow: 1 Queue: 0 Congestion: 0.0833333 TravelTime: 1.50001
+Road 0->1 Flow: 1 Queue: 1 Congestion: 0.0833333 TravelTime: 1.50001
 Road 1->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
+Road 0->2 Flow: 2 Queue: 0 Congestion: 0.125 TravelTime: 1.80007
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 2 Queue: 0 Congestion: 0.142857 TravelTime: 2.00012
+Road 1->3 Flow: 1 Queue: 0 Congestion: 0 TravelTime: 2
 Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
 Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
@@ -33,23 +33,23 @@ Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
 STEP [BY FILE MANAGER]30
 Road 0->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
 Road 1->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 8 Queue: 0 Congestion: 1 TravelTime: 2.07
+Road 0->2 Flow: 4 Queue: 0 Congestion: 0.375 TravelTime: 1.80534
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 2 Queue: 0 Congestion: 0.142857 TravelTime: 2.00012
+Road 1->3 Flow: 4 Queue: 0 Congestion: 0.5 TravelTime: 2.01875
 Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
 Road 2->3 Flow: 3 Queue: 0 Congestion: 0.2 TravelTime: 1.80043
 Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
 Road 4->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 2->4 Flow: 2 Queue: 0 Congestion: 0 TravelTime: 2.18182
+Road 2->4 Flow: 3 Queue: 0 Congestion: 0.142857 TravelTime: 2.18195
 Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
 
 STEP [BY FILE MANAGER]40
 Road 0->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
 Road 1->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 4 Queue: 1 Congestion: 0.375 TravelTime: 1.80534
+Road 0->2 Flow: 4 Queue: 0 Congestion: 0.375 TravelTime: 1.80534
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 1 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
@@ -69,7 +69,7 @@ Road 0->2 Flow: 1 Queue: 0 Congestion: 0.125 TravelTime: 1.80007
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 3 Queue: 0 Congestion: 0.214286 TravelTime: 2.00063
+Road 1->3 Flow: 3 Queue: 0 Congestion: 0.375 TravelTime: 2.00593
 Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
 Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
@@ -85,7 +85,7 @@ Road 0->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 4 Queue: 0 Congestion: 0.285714 TravelTime: 2.002
+Road 1->3 Flow: 4 Queue: 0 Congestion: 0.5 TravelTime: 2.01875
 Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
 Road 2->3 Flow: 1 Queue: 0 Congestion: 0.2 TravelTime: 1.80043
 Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
@@ -101,7 +101,7 @@ Road 0->2 Flow: 1 Queue: 0 Congestion: 0.125 TravelTime: 1.80007
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 4 Queue: 0 Congestion: 0.214286 TravelTime: 2.00063
+Road 1->3 Flow: 4 Queue: 0 Congestion: 0.375 TravelTime: 2.00593
 Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
 Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
@@ -117,7 +117,7 @@ Road 0->2 Flow: 3 Queue: 0 Congestion: 0.375 TravelTime: 1.80534
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 1 Queue: 0 Congestion: 0.0714286 TravelTime: 2.00001
+Road 1->3 Flow: 1 Queue: 0 Congestion: 0.125 TravelTime: 2.00007
 Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
 Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
@@ -133,76 +133,12 @@ Road 0->2 Flow: 5 Queue: 0 Congestion: 0.625 TravelTime: 1.8412
 Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
 Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 1 Queue: 0 Congestion: 0.0714286 TravelTime: 2.00001
+Road 1->3 Flow: 1 Queue: 0 Congestion: 0.125 TravelTime: 2.00007
 Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
 Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
 Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
 Road 4->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
 Road 2->4 Flow: 2 Queue: 0 Congestion: 0.142857 TravelTime: 2.18195
-Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
-
-STEP [BY FILE MANAGER]100
-Road 0->1 Flow: 1 Queue: 0 Congestion: 0.0833333 TravelTime: 1.50001
-Road 1->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 1->2 Flow: 1 Queue: 0 Congestion: 0 TravelTime: 1
-Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 3 Queue: 0 Congestion: 0.142857 TravelTime: 2.00012
-Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
-Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 4->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 2->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
-Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
-
-STEP [BY FILE MANAGER]110
-Road 0->1 Flow: 3 Queue: 0 Congestion: 0.166667 TravelTime: 1.50017
-Road 1->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 2 Queue: 0 Congestion: 0.25 TravelTime: 1.80105
-Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 1 Queue: 0 Congestion: 0.0714286 TravelTime: 2.00001
-Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
-Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 4->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 2->4 Flow: 2 Queue: 0 Congestion: 0.285714 TravelTime: 2.184
-Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
-
-STEP [BY FILE MANAGER]120
-Road 0->1 Flow: 4 Queue: 0 Congestion: 0.166667 TravelTime: 1.50017
-Road 1->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 2 Queue: 0 Congestion: 0.25 TravelTime: 1.80105
-Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 1->2 Flow: 1 Queue: 0 Congestion: 0 TravelTime: 1
-Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 6 Queue: 0 Congestion: 0.428571 TravelTime: 2.01012
-Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
-Road 2->3 Flow: 1 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 4->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 2->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
-Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
-
-STEP [BY FILE MANAGER]130
-Road 0->1 Flow: 2 Queue: 0 Congestion: 0.166667 TravelTime: 1.50017
-Road 1->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.5
-Road 0->2 Flow: 5 Queue: 0 Congestion: 0.625 TravelTime: 1.8412
-Road 2->0 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 1->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 2->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1
-Road 1->3 Flow: 1 Queue: 0 Congestion: 0 TravelTime: 2
-Road 3->1 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2
-Road 2->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 1.8
-Road 3->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 4->3 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.14286
-Road 2->4 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
 Road 4->2 Flow: 0 Queue: 0 Congestion: 0 TravelTime: 2.18182
 
