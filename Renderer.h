@@ -57,6 +57,7 @@ struct VehicleView {
     DotMode mode = DotMode::Moving;
     int slot = 0;
     float alpha = 1.f;              // 1 = solid, 0 = invisible
+    bool highlight = false;         // true = the user-generated car from the "Run" button; drawn green
 };
 
 struct SignalView {
@@ -89,6 +90,22 @@ public:
     bool isPaused() const { return paused; }
     float getSpeedMultiplier() const { return speedMultiplier; }
 
+    // "Run" button (bottom-left, under the title box). Returns true exactly
+    // once per click, then resets itself.
+    bool consumeRunClicked();
+
+    // "Generate Car" flow: clicking the button opens an on-screen dialog
+    // (drawn inside render()) that asks for source then destination node
+    // id, typed right into the SFML window -- no console interaction.
+    // Call this once per frame; it returns true exactly once, with src/dst
+    // filled in, the moment the person finishes typing both. Caller
+    // (main.cpp) then computes the route and reports back with showMessage().
+    bool consumeGeneratedRoute(int& src, int& dst);
+
+    // Shows a short-lived banner near the top of the window (e.g. the
+    // computed shortest path, or an error). Replaces console-only feedback.
+    void showMessage(const std::string& text, bool isError = false);
+
     void close();
 
 private:
@@ -98,6 +115,30 @@ private:
 
     bool paused;
     float speedMultiplier;
+
+    // ---- "Generate Car" / "Run" buttons ----
+    sf::FloatRect btnGenerateRect{ { 20.f, 70.f },  { 170.f, 42.f } };
+    sf::FloatRect btnRunRect{ { 20.f, 122.f }, { 170.f, 42.f } };
+    bool runClicked = false;
+    void drawSideButtons();
+
+    // ---- on-screen "enter source/destination" dialog ----
+    enum class InputStage { None, Source, Destination };
+    InputStage inputStage = InputStage::None;
+    std::string inputBuffer;     // digits typed so far for the current field
+    int capturedSrc = -1;
+    int capturedDst = -1;
+    bool routeReady = false;     // both fields captured, waiting for consumeGeneratedRoute()
+    sf::Clock cursorBlinkClock;
+    void drawInputDialog(const SimSnapshot& snap);
+
+    // ---- short-lived message banner (result of Generate Car / Run) ----
+    std::string bannerText;
+    bool bannerIsError = false;
+    bool bannerActive = false;
+    sf::Clock bannerClock;
+    static constexpr float BANNER_SECONDS = 6.f;
+    void drawBanner();
 
     // Layout constants (pixels)
     static constexpr float RING_RADIUS = 26.f;          // fixed -- the name lives in a separate pill, not inside the ring
@@ -109,6 +150,15 @@ private:
     static constexpr float SIGNAL_BOX_W = 24.f, SIGNAL_BOX_H = 18.f; // signal box laid across the lane, like a stop line (W must stay 24: the stop-line maths uses it)
     static constexpr float STUB_LENGTH = 80.f;
     static constexpr float BOTTOM_BAR_HEIGHT = 26.f;
+    static constexpr float LANE_OFFSET = 9.f;   // sideways shift of each road's own lane, so a road and its reverse partner don't sit on top of each other
+
+    // Sideways offset to apply to BOTH endpoints of a road drawn from
+    // `from` to `to`, so it renders as its own lane instead of sharing the
+    // node-to-node centerline with the road running the opposite way.
+    // Offsetting to the right of travel direction means the offset flips
+    // sign automatically between a road and its reverse (u flips sign),
+    // so the two lanes end up on opposite sides with no extra bookkeeping.
+    sf::Vector2f laneOffsetFor(sf::Vector2f from, sf::Vector2f to) const;
 
     // The demo graph is laid out in "layout units" (main.cpp's kNodeLayout).
     // Every frame updateLayout() works out a uniform scale + offset that fits

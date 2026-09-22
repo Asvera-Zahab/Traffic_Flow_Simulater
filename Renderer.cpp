@@ -75,29 +75,120 @@ void Renderer::close() { window.close(); }
 void Renderer::pollEvents() {
     while (const std::optional<sf::Event> event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
+            std::cout << "[SFML] Window close requested." << std::endl;
             window.close();
         }
-        else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-            switch (keyPressed->code) {
-            case sf::Keyboard::Key::Escape:
-                window.close();
-                break;
-            case sf::Keyboard::Key::Space:
-                paused = !paused;
-                break;
-            case sf::Keyboard::Key::Equal:
-            case sf::Keyboard::Key::Add:
-                speedMultiplier = std::min(4.0f, speedMultiplier + 0.25f);
-                break;
-            case sf::Keyboard::Key::Hyphen:
-            case sf::Keyboard::Key::Subtract:
-                speedMultiplier = std::max(0.25f, speedMultiplier - 0.25f);
-                break;
-            default:
-                break;
+        else if (inputStage != InputStage::None && event->is<sf::Event::TextEntered>()) {
+            // Typing mode: only digits go into the current field.
+            const auto* te = event->getIf<sf::Event::TextEntered>();
+            if (te->unicode >= '0' && te->unicode <= '9' && inputBuffer.size() < 4) {
+                inputBuffer += static_cast<char>(te->unicode);
             }
         }
+        else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            if (inputStage != InputStage::None) {
+                // Typing mode: Enter confirms the field, Backspace edits,
+                // Escape cancels the whole dialog. Nothing else (space/+/-)
+                // does anything while a field is open, so typing can't
+                // accidentally pause the sim or change its speed.
+                if (keyPressed->code == sf::Keyboard::Key::Enter) {
+                    if (!inputBuffer.empty()) {
+                        int value = std::stoi(inputBuffer);
+                        if (inputStage == InputStage::Source) {
+                            capturedSrc = value;
+                            std::cout << "[SFML] Source node entered: " << value << std::endl;
+                            inputStage = InputStage::Destination;
+                            inputBuffer.clear();
+                        }
+                        else { // Destination
+                            capturedDst = value;
+                            std::cout << "[SFML] Destination node entered: " << value << std::endl;
+                            inputStage = InputStage::None;
+                            inputBuffer.clear();
+                            routeReady = true;
+                        }
+                    }
+                }
+                else if (keyPressed->code == sf::Keyboard::Key::Backspace) {
+                    if (!inputBuffer.empty()) inputBuffer.pop_back();
+                }
+                else if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                    std::cout << "[SFML] Generate Car cancelled." << std::endl;
+                    inputStage = InputStage::None;
+                    inputBuffer.clear();
+                    capturedSrc = capturedDst = -1;
+                }
+            }
+            else {
+                switch (keyPressed->code) {
+                case sf::Keyboard::Key::Escape:
+                    std::cout << "[SFML] ESC pressed -- closing window." << std::endl;
+                    window.close();
+                    break;
+                case sf::Keyboard::Key::Space:
+                    paused = !paused;
+                    std::cout << "[SFML] SPACE pressed -- " << (paused ? "paused." : "resumed.") << std::endl;
+                    break;
+                case sf::Keyboard::Key::Equal:
+                case sf::Keyboard::Key::Add:
+                    speedMultiplier = std::min(4.0f, speedMultiplier + 0.25f);
+                    std::cout << "[SFML] Speed increased to " << speedMultiplier << "x." << std::endl;
+                    break;
+                case sf::Keyboard::Key::Hyphen:
+                case sf::Keyboard::Key::Subtract:
+                    speedMultiplier = std::max(0.25f, speedMultiplier - 0.25f);
+                    std::cout << "[SFML] Speed decreased to " << speedMultiplier << "x." << std::endl;
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+            // Buttons are inert while the input dialog is open.
+            if (inputStage == InputStage::None && mousePressed->button == sf::Mouse::Button::Left) {
+                sf::Vector2f mp(static_cast<float>(mousePressed->position.x),
+                    static_cast<float>(mousePressed->position.y));
+                if (btnGenerateRect.contains(mp)) {
+                    std::cout << "[SFML] 'Generate Car' button clicked -- enter source node id." << std::endl;
+                    inputStage = InputStage::Source;
+                    inputBuffer.clear();
+                    capturedSrc = capturedDst = -1;
+                    routeReady = false;
+                    cursorBlinkClock.restart();
+                }
+                else if (btnRunRect.contains(mp)) {
+                    runClicked = true;
+                    std::cout << "[SFML] 'Run' button clicked." << std::endl;
+                }
+            }
+        }
+        else if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+            std::cout << "[SFML] Window resized to " << resized->size.x << "x" << resized->size.y << "." << std::endl;
+        }
     }
+}
+
+bool Renderer::consumeRunClicked() {
+    bool v = runClicked;
+    runClicked = false;
+    return v;
+}
+
+bool Renderer::consumeGeneratedRoute(int& src, int& dst) {
+    if (!routeReady) return false;
+    src = capturedSrc;
+    dst = capturedDst;
+    routeReady = false;
+    capturedSrc = capturedDst = -1;
+    return true;
+}
+
+void Renderer::showMessage(const std::string& text, bool isError) {
+    bannerText = text;
+    bannerIsError = isError;
+    bannerActive = true;
+    bannerClock.restart();
 }
 
 // ---- colors ----
@@ -344,6 +435,15 @@ void Renderer::drawStatsBox(const SimSnapshot& snap) {
     line(speedStr.str(), 13, TEXT_DIM, 19.f);
 }
 
+sf::Vector2f Renderer::laneOffsetFor(sf::Vector2f from, sf::Vector2f to) const {
+    sf::Vector2f d = to - from;
+    float len = std::sqrt(d.x * d.x + d.y * d.y);
+    if (len < 1.f) return { 0.f, 0.f };
+    sf::Vector2f u = d / len;
+    sf::Vector2f perp(-u.y, u.x);
+    return perp * LANE_OFFSET;
+}
+
 // ---- one road: asphalt strip with a coloured edge (= congestion),
 // white dashed centre line, and a red dashed edge when blocked ----
 
@@ -375,6 +475,9 @@ void Renderer::drawRoads(const SimSnapshot& snap, const std::map<int, NodeView>&
 
         sf::Vector2f a = toScreen(itSrc->second.x, itSrc->second.y);
         sf::Vector2f b = toScreen(itDst->second.x, itDst->second.y);
+        sf::Vector2f laneOff = laneOffsetFor(a, b);
+        a += laneOff;
+        b += laneOff;
         sf::Vector2f d = b - a;
         float len = std::sqrt(d.x * d.x + d.y * d.y);
         if (len < 1.f) continue;
@@ -602,6 +705,9 @@ void Renderer::drawVehicles(const SimSnapshot& snap,
 
         sf::Vector2f a = toScreen(itSrc->second.x, itSrc->second.y);
         sf::Vector2f b = toScreen(itDst->second.x, itDst->second.y);
+        sf::Vector2f laneOff = laneOffsetFor(a, b);
+        a += laneOff;
+        b += laneOff;
         sf::Vector2f d = b - a;
         float len = std::sqrt(d.x * d.x + d.y * d.y);
         if (len < 1.f) continue;
@@ -659,12 +765,20 @@ void Renderer::drawVehicles(const SimSnapshot& snap,
         sf::Vector2f pos = a + u * dist;
         const std::uint8_t alpha = static_cast<std::uint8_t>(std::clamp(fade, 0.f, 1.f) * 255.f);
 
-        sf::CircleShape dot(radius);
-        dot.setOrigin({ radius, radius });
+        float drawRadius = v.highlight ? radius + 1.5f : radius;
+        sf::CircleShape dot(drawRadius);
+        dot.setOrigin({ drawRadius, drawRadius });
         dot.setPosition(pos);
-        dot.setFillColor(sf::Color(10, 10, 10, alpha));
-        dot.setOutlineThickness(1.f);
-        dot.setOutlineColor(sf::Color(230, 230, 225, alpha));
+        if (v.highlight) {
+            dot.setFillColor(sf::Color(46, 226, 104, alpha));   // the "Run" button's green car
+            dot.setOutlineThickness(2.f);
+            dot.setOutlineColor(sf::Color(255, 255, 255, alpha));
+        }
+        else {
+            dot.setFillColor(sf::Color(10, 10, 10, alpha));
+            dot.setOutlineThickness(1.f);
+            dot.setOutlineColor(sf::Color(230, 230, 225, alpha));
+        }
         window.draw(dot);
     }
 }
@@ -696,6 +810,9 @@ void Renderer::drawSignals(const SimSnapshot& snap,
 
             sf::Vector2f a = toScreen(itSrc->second.x, itSrc->second.y);
             sf::Vector2f b = toScreen(itDst->second.x, itDst->second.y);
+            sf::Vector2f laneOff = laneOffsetFor(a, b);
+            a += laneOff;
+            b += laneOff;
             sf::Vector2f d = b - a;
             float len = std::sqrt(d.x * d.x + d.y * d.y);
             if (len < 1.f) continue;
@@ -800,6 +917,124 @@ void Renderer::drawCompass() {
     window.draw(n);
 }
 
+// ---- "Generate Car" / "Run" buttons (stacked, top-left, under the title box) ----
+
+void Renderer::drawSideButtons() {
+    auto drawButton = [&](const sf::FloatRect& r, const std::string& label,
+        sf::Color fill, sf::Color outline, sf::Color textColor) {
+            sf::Vector2f center = r.position + r.size / 2.f;
+            sf::ConvexShape box = roundedLabelBox(center, r.size, fill, 10.f);
+            box.setOutlineThickness(1.5f);
+            box.setOutlineColor(outline);
+            window.draw(box);
+
+            sf::Text t = makeText(label, 15, textColor);
+            sf::FloatRect b = t.getLocalBounds();
+            t.setOrigin({ b.size.x / 2.f, b.size.y / 2.f + b.position.y });
+            t.setPosition(center);
+            window.draw(t);
+        };
+
+    drawButton(btnGenerateRect, "Generate Car",
+        sf::Color(40, 55, 82, 235), sf::Color(120, 150, 220, 220), TEXT_MAIN);
+    drawButton(btnRunRect, "Run",
+        sf::Color(22, 60, 34, 235), SIGNAL_GREEN, sf::Color(196, 255, 208));
+}
+
+// ---- on-screen "enter source/destination" dialog (drawn while inputStage != None) ----
+
+void Renderer::drawInputDialog(const SimSnapshot& snap) {
+    const sf::Vector2f win = (sf::Vector2f)window.getSize();
+
+    // Dim the whole window so the dialog reads as a modal.
+    sf::RectangleShape dim(win);
+    dim.setPosition({ 0.f, 0.f });
+    dim.setFillColor(sf::Color(0, 0, 0, 140));
+    window.draw(dim);
+
+    const float w = 420.f, h = 176.f;
+    sf::Vector2f topLeft{ (win.x - w) / 2.f, (win.y - h) / 2.f };
+    drawPanel(topLeft, { w, h }, 14.f);
+
+    float cx = topLeft.x + w / 2.f;
+    float y = topLeft.y + 22.f;
+
+    sf::Text title = makeText("Generate Car", 20, TEXT_MAIN);
+    sf::FloatRect tb = title.getLocalBounds();
+    title.setOrigin({ tb.size.x / 2.f, tb.size.y / 2.f + tb.position.y });
+    title.setPosition({ cx, y });
+    window.draw(title);
+    y += 34.f;
+
+    std::string prompt = (inputStage == InputStage::Source)
+        ? "Enter SOURCE node id:"
+        : "Enter DESTINATION node id:";
+    if (inputStage == InputStage::Destination) {
+        prompt = "Source = " + std::to_string(capturedSrc) + "   |   Enter DESTINATION node id:";
+    }
+    sf::Text promptText = makeText(prompt, 14, TEXT_DIM);
+    sf::FloatRect pb = promptText.getLocalBounds();
+    promptText.setOrigin({ pb.size.x / 2.f, pb.size.y / 2.f + pb.position.y });
+    promptText.setPosition({ cx, y });
+    window.draw(promptText);
+    y += 38.f;
+
+    // The typed digits, in an input box, with a blinking text cursor.
+    bool showCursor = std::fmod(cursorBlinkClock.getElapsedTime().asSeconds(), 1.0f) < 0.5f;
+    std::string shown = inputBuffer + (showCursor ? "_" : " ");
+    sf::ConvexShape box = roundedLabelBox({ cx, y }, { 140.f, 36.f }, sf::Color(10, 14, 22, 255), 8.f);
+    box.setOutlineThickness(1.5f);
+    box.setOutlineColor(sf::Color(120, 150, 220, 220));
+    window.draw(box);
+
+    sf::Text valText = makeText(shown, 18, TEXT_MAIN);
+    sf::FloatRect vb = valText.getLocalBounds();
+    valText.setOrigin({ vb.size.x / 2.f, vb.size.y / 2.f + vb.position.y });
+    valText.setPosition({ cx, y });
+    window.draw(valText);
+    y += 36.f;
+
+    // Hint: which node ids actually exist, straight from the live snapshot.
+    std::ostringstream hint;
+    hint << "Available: ";
+    for (size_t i = 0; i < snap.nodes.size(); i++) {
+        hint << snap.nodes[i].id << " " << snap.nodes[i].name;
+        if (i + 1 < snap.nodes.size()) hint << "   ";
+    }
+    sf::Text hintText = makeText(hint.str(), 12, TEXT_DIM);
+    sf::FloatRect hb = hintText.getLocalBounds();
+    hintText.setOrigin({ hb.size.x / 2.f, hb.size.y / 2.f + hb.position.y });
+    hintText.setPosition({ cx, y });
+    window.draw(hintText);
+    y += 26.f;
+
+    sf::Text footer = makeText("[Enter] Confirm    [Esc] Cancel", 12, TEXT_DIM);
+    sf::FloatRect fb = footer.getLocalBounds();
+    footer.setOrigin({ fb.size.x / 2.f, fb.size.y / 2.f + fb.position.y });
+    footer.setPosition({ cx, y });
+    window.draw(footer);
+}
+
+// ---- result banner (shortest path / errors / spawn confirmation) ----
+
+void Renderer::drawBanner() {
+    if (!bannerActive) return;
+    if (bannerClock.getElapsedTime().asSeconds() > BANNER_SECONDS) {
+        bannerActive = false;
+        return;
+    }
+
+    sf::Text t = makeText(bannerText, 15, bannerIsError ? sf::Color(255, 140, 140) : sf::Color(190, 255, 200));
+    sf::FloatRect b = t.getLocalBounds();
+    sf::Vector2f size(b.size.x + 32.f, 38.f);
+    sf::Vector2f topLeft{ (window.getSize().x - size.x) / 2.f, 16.f };
+    drawPanel(topLeft, size, 10.f);
+
+    t.setOrigin({ b.size.x / 2.f, b.size.y / 2.f + b.position.y });
+    t.setPosition({ topLeft.x + size.x / 2.f, topLeft.y + size.y / 2.f });
+    window.draw(t);
+}
+
 // ---- bottom controls strip ----
 
 void Renderer::drawControlsStrip() {
@@ -850,9 +1085,12 @@ void Renderer::render(const SimSnapshot& snapshot) {
 
     drawTitleBox(snapshot);
     drawStatsBox(snapshot);
+    drawSideButtons();
     if (winSize.x >= 960.f && winSize.y >= 600.f) drawLegend(snapshot);   // hidden in very small windows so it can't cover the map
     drawCompass();
     drawControlsStrip();
+    drawBanner();
+    if (inputStage != InputStage::None) drawInputDialog(snapshot);   // modal: always drawn last, on top
 
     window.display();
 }

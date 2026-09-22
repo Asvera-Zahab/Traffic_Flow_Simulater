@@ -51,6 +51,10 @@ public:
     int mostBusyNodeTracked;
     int maxFlowTracked;
 
+    // id of the vehicle spawned via the GUI's "Run" button, so the renderer
+    // can draw that one dot green instead of the usual black. -1 = none yet.
+    int highlightedVehicleId;
+
     Simulator() {
         currentStep = 0;
         totalSteps = 50;
@@ -62,6 +66,7 @@ public:
         maxCongTracked = -1.0;
         mostBusyNodeTracked = 0;
         maxFlowTracked = -1;
+        highlightedVehicleId = -1;
     }
 
     void buildCityGraph() {
@@ -74,15 +79,21 @@ public:
         graph.addVertex(4, "Kashmir");
 
         // addEdge(src, dst, length_km, maxSpeed_kmh, capacity, dischargeRate)
-        graph.addEdge(0, 1, 2.0, 80.0, 12, 4.0);  // Main highway
-        graph.addEdge(0, 2, 1.5, 50.0, 8, 3.0);   // Urban road
-        graph.addEdge(1, 2, 1.0, 60.0, 6, 2.0);   // Connector road
-        graph.addEdge(1, 3, 3.0, 90.0, 14, 5.0);  // Expressway
-        graph.addEdge(2, 3, 1.2, 40.0, 5, 2.0);   // Narrow road
-        graph.addEdge(3, 4, 2.5, 70.0, 10, 3.0);  // Final stretch
-        graph.addEdge(2, 4, 2.0, 55.0, 7, 3.0);   // Bypass road
+        // Each road is added BOTH ways (src->dst and dst->src) with the same
+        // physical parameters, so the network is a genuine two-way road
+        // system: a road's congestion/queue/signal in one direction is
+        // completely independent of the opposite direction, exactly like a
+        // real two-lane road, instead of traffic only ever being allowed to
+        // flow one way between two junctions.
+        graph.addEdge(0, 1, 2.0, 80.0, 12, 4.0);  graph.addEdge(1, 0, 2.0, 80.0, 12, 4.0);  // Main highway
+        graph.addEdge(0, 2, 1.5, 50.0, 8, 3.0);   graph.addEdge(2, 0, 1.5, 50.0, 8, 3.0);   // Urban road
+        graph.addEdge(1, 2, 1.0, 60.0, 6, 2.0);   graph.addEdge(2, 1, 1.0, 60.0, 6, 2.0);   // Connector road
+        graph.addEdge(1, 3, 3.0, 90.0, 14, 5.0);  graph.addEdge(3, 1, 3.0, 90.0, 14, 5.0);  // Expressway
+        graph.addEdge(2, 3, 1.2, 40.0, 5, 2.0);   graph.addEdge(3, 2, 1.2, 40.0, 5, 2.0);   // Narrow road
+        graph.addEdge(3, 4, 2.5, 70.0, 10, 3.0);  graph.addEdge(4, 3, 2.5, 70.0, 10, 3.0);  // Final stretch
+        graph.addEdge(2, 4, 2.0, 55.0, 7, 3.0);   graph.addEdge(4, 2, 2.0, 55.0, 7, 3.0);   // Bypass road
 
-        cout << "City graph created with 5 nodes and 7 roads." << endl;
+        cout << "City graph created with 5 nodes and 14 roads (two-way)." << endl;
     }
 
     void setupSignals() {
@@ -98,17 +109,23 @@ public:
     }
 
     void scheduleEvents() {
+        // Roads now come in src->dst / dst->src pairs (see buildCityGraph()),
+        // so a road's id is no longer a fixed number -- look up the specific
+        // 0->2 direction by its endpoints instead of hardcoding an id that
+        // would silently point at the wrong (possibly reverse) road.
+        int blockedRoad = graph.findRoadIndex(0, 2);
+
         SimEvent block;
         block.step = 15;
         block.type = ROAD_BLOCK;
-        block.roadId = 1;
+        block.roadId = blockedRoad;
         block.description = "Road 0->2 BLOCKED (accident)";
         events.push_back(block);
 
         SimEvent clear;
         clear.step = 25;
         clear.type = ROAD_CLEAR;
-        clear.roadId = 1;
+        clear.roadId = blockedRoad;
         clear.description = "Road 0->2 CLEARED";
         events.push_back(clear);
 
@@ -258,6 +275,44 @@ public:
             totalGenerated++;
             active++;
         }
+    }
+
+    // ---- GUI: "Generate Car" / "Run" buttons ----
+
+    // Computes (but does not spawn) the current shortest path from src to
+    // dst using live, congestion-adjusted travel times. Returns an empty
+    // vector if either node doesn't exist or no path exists.
+    vector<int> previewShortestPath(int src, int dst) const {
+        if (graph.nodes.find(src) == graph.nodes.end() || graph.nodes.find(dst) == graph.nodes.end())
+            return vector<int>();
+        return graph.shortestPathDijkstra(src, dst);
+    }
+
+    // Spawns one extra vehicle -- on top of the normal randomly generated
+    // traffic -- along the exact path given (from previewShortestPath).
+    // Marks it as the highlighted vehicle so the renderer draws it green.
+    bool spawnUserVehicle(int src, int dst, const vector<int>& path) {
+        if (path.empty() || path.front() != src || path.back() != dst) {
+            cout << "[Simulator] Cannot spawn user vehicle: no valid path " << src << " -> " << dst << endl;
+            return false;
+        }
+
+        Vehicle v(nextVehicleId++, src, dst, currentStep);
+        v.path = path;
+        v.currentNode = src;
+        v.status = WAITING;
+        vehicles.push_back(v);
+        totalGenerated++;
+        highlightedVehicleId = v.id;
+
+        cout << "[Simulator] User vehicle #" << v.id << " generated: " << src << " -> " << dst
+            << " | path: ";
+        for (size_t i = 0; i < path.size(); i++) {
+            cout << path[i];
+            if (i + 1 < path.size()) cout << "->";
+        }
+        cout << endl;
+        return true;
     }
 
     // ---- stop-line helpers ----

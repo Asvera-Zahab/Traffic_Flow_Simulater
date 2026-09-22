@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <vector>
 
 // Set true to print per-step dot counts to the console while debugging.
@@ -72,6 +73,15 @@ static int slotIn(const std::map<int, std::vector<int>>& order, int roadId, int 
     if (it == order.end()) return 0;
     auto pos = std::find(it->second.begin(), it->second.end(), vehicleId);
     return pos == it->second.end() ? 0 : (int)(pos - it->second.begin());
+}
+
+// Looks up a junction's display name (falls back to the raw id as a string
+// if the node doesn't exist or has no name set).
+static std::string nodeName(const Simulator& sim, int id) {
+    auto it = sim.graph.nodes.find(id);
+    if (it != sim.graph.nodes.end() && !it->second.name.empty())
+        return it->second.name;
+    return std::to_string(id);
 }
 
 // The road a not-yet-started car should be drawn on: the first road of its route.
@@ -170,6 +180,7 @@ SimSnapshot buildSnapshot(const Simulator& sim, float stepFraction) {
         if (d.mode == DotMode::StoppedAtLine) { d.slot = slotIn(parkedOrder, d.roadId, d.id); waiting++; }
         else if (d.mode == DotMode::WaitingAtStart) { d.slot = slotIn(startOrder, d.roadId, d.id); waiting++; }
         else if (d.mode != DotMode::Exiting) moving++;
+        if (d.id == sim.highlightedVehicleId) d.highlight = true;  // the "Run" button's car -> drawn green
         snap.vehicles.push_back(d);
     }
 
@@ -242,8 +253,58 @@ int main() {
     sf::Clock stepClock;
     const float secondsPerStep = 0.6f; // wall-clock seconds per sim tick at 1x speed
 
+    // ---- "Generate Car" / "Run" button state ----
+    // Generate Car: the src/dst prompt itself is drawn and typed entirely
+    // inside the SFML window (Renderer::drawInputDialog). Once both are
+    // typed in, consumeGeneratedRoute() hands them here; we compute the
+    // shortest path and show it back on-screen via showMessage().
+    // Run: spawns that pending path as one extra vehicle, drawn green.
+    bool hasPendingRoute = false;
+    int pendingSrc = -1, pendingDst = -1;
+    std::vector<int> pendingPath;
+
     while (renderer.isOpen()) {
         renderer.pollEvents();
+
+        int enteredSrc, enteredDst;
+        if (renderer.consumeGeneratedRoute(enteredSrc, enteredDst)) {
+            std::cout << "[main] Generate Car: " << nodeName(sim, enteredSrc)
+                << " -> " << nodeName(sim, enteredDst) << std::endl;
+            pendingPath = sim.previewShortestPath(enteredSrc, enteredDst);
+            if (pendingPath.empty()) {
+                std::cout << "[main] No path found (bad node id or unreachable)." << std::endl;
+                renderer.showMessage("No path found between " + nodeName(sim, enteredSrc) +
+                    " and " + nodeName(sim, enteredDst), true);
+                hasPendingRoute = false;
+            }
+            else {
+                pendingSrc = enteredSrc;
+                pendingDst = enteredDst;
+                std::ostringstream oss;
+                oss << "Shortest path: ";
+                for (size_t i = 0; i < pendingPath.size(); i++) {
+                    oss << nodeName(sim, pendingPath[i]);
+                    if (i + 1 < pendingPath.size()) oss << " -> ";
+                }
+                oss << "  (click Run)";
+                std::cout << "[main] " << oss.str() << std::endl;
+                renderer.showMessage(oss.str(), false);
+                hasPendingRoute = true;
+            }
+        }
+
+        if (renderer.consumeRunClicked()) {
+            if (hasPendingRoute) {
+                sim.spawnUserVehicle(pendingSrc, pendingDst, pendingPath);
+                renderer.showMessage("Vehicle generated: " + nodeName(sim, pendingSrc) +
+                    " -> " + nodeName(sim, pendingDst), false);
+                hasPendingRoute = false;
+            }
+            else {
+                std::cout << "[main] No pending route -- click 'Generate Car' first." << std::endl;
+                renderer.showMessage("Click 'Generate Car' first.", true);
+            }
+        }
 
         const float interval = secondsPerStep / renderer.getSpeedMultiplier();
         float elapsed = stepClock.getElapsedTime().asSeconds();
